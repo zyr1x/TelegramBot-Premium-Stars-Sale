@@ -92,40 +92,17 @@ public class TelegramService {
 
     // ─── Редактирование с авто-разбором формата ──────────────────────────────
 
-    public void editMessageAuto(TelegramClient bot, Long chatId, Integer messageId, String raw) {
-        editMessageAuto(bot, chatId, messageId, raw, null);
+    public void sendMessageAuto(TelegramClient bot, Long chatId, Integer messageId, String raw) {
+        sendMessageAuto(bot, chatId, messageId, raw, null);
     }
 
     /**
-     * Если новое сообщение с фото — заменяем медиа через EditMessageMedia.
-     * Если без фото — удаляем старое и отправляем текстовое,
-     * т.к. Telegram не позволяет убрать фото из уже отправленного сообщения.
-     *
-     * @return новый messageId (если пересоздано) или старый (если просто отредактировано)
+     * Удаляет старое сообщение и отправляет новое.
+     * @return новый messageId
      */
-    public Integer editMessageAuto(TelegramClient bot, Long chatId, Integer messageId, String raw, InlineKeyboardMarkup markup) {
-        String[] parts = parseTextAndPath(raw);
-        String text = parts[0];
-        String path = parts[1];
-
-        if (path != null) {
-            File photoFile = resolveFile(path);
-            if (photoFile != null) {
-                // Пробуем отредактировать медиа. Если сообщение было текстовым — удаляем и пересылаем с фото
-                try {
-                    editMedia(bot, chatId, messageId, photoFile, text, markup);
-                    return messageId;
-                } catch (Exception e) {
-                    deleteMessage(chatId, messageId);
-                    Message sent = sendPhoto(chatId, photoFile, text, markup);
-                    return sent != null ? sent.getMessageId() : null;
-                }
-            }
-        }
-
-        // Фото нет — удаляем старое и шлём чистое текстовое
+    public Integer sendMessageAuto(TelegramClient bot, Long chatId, Integer messageId, String raw, InlineKeyboardMarkup markup) {
         deleteMessage(chatId, messageId);
-        Message sent = sendMessage(chatId, text != null ? text : "", markup);
+        Message sent = sendMessageAuto(chatId, raw, markup);
         return sent != null ? sent.getMessageId() : null;
     }
 
