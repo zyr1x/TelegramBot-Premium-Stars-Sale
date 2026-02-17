@@ -65,4 +65,8 @@ public class ScreenFactory {
                 clientMessageConfig, buttonsLocConfig, telegramService, fragmentStarsService,
                 errorMessageConfig, transactionService, userService, screenManager, this);
     }
+
+    public SubscribeChannelScreen createSubscribeChannelScreen(Long chatId, Long userId) {
+        return new SubscribeChannelScreen(chatId, userId, telegramService, clientMessageConfig, telegramConfig, buttonsLocConfig, screenManager, this);
+    }
 }

@@ -48,6 +48,8 @@ localization:
     yourself: '🫵 Себе'
     other: '🫂 Другому'
     confirm: '✅ Подтвердить'
+    check-sub: '⚠️ Проверить подписку ⚠️'
+    go-channel: '👉 Перейти'
   error-message:
     buy-stars-method-error: 'Не получилось создать платеж (Возможно устарел API, обратитесь в ТП) Ответ от API {0}'
     fragment-error: 'Проблема на стороне Fragment (Возможно устарел API, обратитесь в ТП) Ответ от API {0}'

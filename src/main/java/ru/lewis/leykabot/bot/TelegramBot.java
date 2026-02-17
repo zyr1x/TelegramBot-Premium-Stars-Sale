@@ -67,7 +67,7 @@ public class TelegramBot implements LongPollingSingleThreadUpdateConsumer {
 
         if (text.equals("/start")) {
             if (!telegramService.isUserSubscribed(userId)) {
-                telegramService.sendMessageAuto(chatId, clientMessageConfig.getSubscribeChannel());
+                screenManager.createScreen(chatId, screenFactory.createSubscribeChannelScreen(chatId, userId));
                 return;
             }
             if (!userService.isUserExists(userId)) {

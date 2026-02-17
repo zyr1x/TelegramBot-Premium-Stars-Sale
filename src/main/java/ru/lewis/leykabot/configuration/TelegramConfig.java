@@ -10,6 +10,7 @@ import org.springframework.context.annotation.Configuration;
 @Getter
 @Setter
 public class TelegramConfig {
+    private String channelCheckSubscribeUrl;
     private String channelCheckSubscribe;
     private Long logChannelId;
     private Integer logChannelTopicId;

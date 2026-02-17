@@ -19,4 +19,6 @@ public class ButtonsLocConfig {
     private String yourself;
     private String other;
     private String confirm;
+    private String checkSub;
+    private String goChannel;
 }
