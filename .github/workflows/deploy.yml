@@ -16,7 +16,7 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            cd /home/tg/leyka_bot
+            cd /home/tg/LeykaShopBot
             git pull origin main
             docker-compose stop leykabot
             docker-compose rm -f leykabot
