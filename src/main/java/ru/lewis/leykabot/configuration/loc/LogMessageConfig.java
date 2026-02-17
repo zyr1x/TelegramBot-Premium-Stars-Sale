@@ -12,4 +12,6 @@ import org.springframework.context.annotation.Configuration;
 public class LogMessageConfig {
     private String createCode;
     private String transactionCreate;
+    private String appDisable;
+    private String appEnable;
 }

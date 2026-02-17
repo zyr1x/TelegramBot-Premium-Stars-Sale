@@ -111,8 +111,15 @@ public class TelegramService {
         if (path != null) {
             File photoFile = resolveFile(path);
             if (photoFile != null) {
-                editMedia(bot, chatId, messageId, photoFile, text, markup);
-                return messageId;
+                // Пробуем отредактировать медиа. Если сообщение было текстовым — удаляем и пересылаем с фото
+                try {
+                    editMedia(bot, chatId, messageId, photoFile, text, markup);
+                    return messageId;
+                } catch (Exception e) {
+                    deleteMessage(chatId, messageId);
+                    Message sent = sendPhoto(chatId, photoFile, text, markup);
+                    return sent != null ? sent.getMessageId() : null;
+                }
             }
         }
 
@@ -151,7 +158,7 @@ public class TelegramService {
         try {
             bot.execute(builder.build());
         } catch (TelegramApiException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
     }
 
@@ -370,7 +377,7 @@ public class TelegramService {
         try {
             bot.execute(builder.build());
         } catch (TelegramApiException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
     }
 }
