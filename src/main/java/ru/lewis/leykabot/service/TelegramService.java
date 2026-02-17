@@ -7,7 +7,9 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageCaption;
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageMedia;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
+import org.telegram.telegrambots.meta.api.objects.media.InputMediaPhoto;
 import org.telegram.telegrambots.meta.api.objects.InputFile;
 import org.telegram.telegrambots.meta.api.objects.chat.Chat;
 import org.telegram.telegrambots.meta.api.objects.chatmember.ChatMember;
@@ -18,6 +20,7 @@ import org.telegram.telegrambots.meta.generics.TelegramClient;
 import ru.lewis.leykabot.configuration.TelegramConfig;
 
 import java.io.File;
+import java.net.URL;
 
 @Service
 public class TelegramService {
@@ -33,10 +36,6 @@ public class TelegramService {
 
     // ─── Парсинг формата "ТЕКСТ;путь" ────────────────────────────────────────
 
-    /**
-     * Разбирает строку формата "ТЕКСТ;путь/до/картинки".
-     * Если разделителя нет — путь будет null.
-     */
     private String[] parseTextAndPath(String raw) {
         int idx = raw.indexOf(';');
         if (idx == -1) {
@@ -47,13 +46,32 @@ public class TelegramService {
         return new String[]{text, path.isEmpty() ? null : path};
     }
 
+    /**
+     * Ищет файл сначала как абсолютный/относительный путь на диске,
+     * затем как ресурс в classpath — работает и из IDE, и из собранного jar.
+     *
+     * В yaml пиши путь относительно resources, например: images/welcome.png
+     */
+    private File resolveFile(String path) {
+        // 1. Абсолютный или относительный путь на диске
+        File file = new File(path);
+        if (file.exists()) {
+            return file;
+        }
+        // 2. Classpath (resources/images/welcome.png → "images/welcome.png")
+        URL resource = getClass().getClassLoader().getResource(path);
+        if (resource != null) {
+            try {
+                return new File(resource.toURI());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        return null;
+    }
+
     // ─── Отправка сообщения с авто-разбором формата ───────────────────────────
 
-    /**
-     * Принимает строку вида "ТЕКСТ;путь" или просто "ТЕКСТ".
-     * Если путь указан и файл существует — отправляет фото с подписью,
-     * иначе — обычное текстовое сообщение.
-     */
     public Message sendMessageAuto(Long chatId, String raw) {
         return sendMessageAuto(chatId, raw, null);
     }
@@ -64,12 +82,77 @@ public class TelegramService {
         String path = parts[1];
 
         if (path != null) {
-            File photo = new File(path);
-            if (photo.exists()) {
+            File photo = resolveFile(path);
+            if (photo != null) {
                 return sendPhoto(chatId, photo, text, markup);
             }
         }
         return sendMessage(chatId, text, markup);
+    }
+
+    // ─── Редактирование с авто-разбором формата ──────────────────────────────
+
+    public void editMessageAuto(TelegramClient bot, Long chatId, Integer messageId, String raw) {
+        editMessageAuto(bot, chatId, messageId, raw, null);
+    }
+
+    /**
+     * Если новое сообщение с фото — заменяем медиа через EditMessageMedia.
+     * Если без фото — удаляем старое и отправляем текстовое,
+     * т.к. Telegram не позволяет убрать фото из уже отправленного сообщения.
+     *
+     * @return новый messageId (если пересоздано) или старый (если просто отредактировано)
+     */
+    public Integer editMessageAuto(TelegramClient bot, Long chatId, Integer messageId, String raw, InlineKeyboardMarkup markup) {
+        String[] parts = parseTextAndPath(raw);
+        String text = parts[0];
+        String path = parts[1];
+
+        if (path != null) {
+            File photoFile = resolveFile(path);
+            if (photoFile != null) {
+                editMedia(bot, chatId, messageId, photoFile, text, markup);
+                return messageId;
+            }
+        }
+
+        // Фото нет — удаляем старое и шлём чистое текстовое
+        deleteMessage(chatId, messageId);
+        Message sent = sendMessage(chatId, text != null ? text : "", markup);
+        return sent != null ? sent.getMessageId() : null;
+    }
+
+    // ─── Замена фото + подписи через EditMessageMedia ─────────────────────────
+
+    public void editMedia(TelegramClient bot, Long chatId, Integer messageId, File photo, String caption) {
+        editMedia(bot, chatId, messageId, photo, caption, null);
+    }
+
+    public void editMedia(TelegramClient bot, Long chatId, Integer messageId, File photo, String caption, InlineKeyboardMarkup markup) {
+        if (caption != null && caption.length() > MAX_MESSAGE_LENGTH) {
+            caption = caption.substring(0, MAX_MESSAGE_LENGTH - 50) + "\n\n... (сообщение обрезано)";
+        }
+
+        InputMediaPhoto media = new InputMediaPhoto(photo, photo.getName());
+        media.setParseMode("HTML");
+        if (caption != null) {
+            media.setCaption(caption);
+        }
+
+        var builder = EditMessageMedia.builder()
+                .chatId(chatId)
+                .messageId(messageId)
+                .media(media);
+
+        if (markup != null) {
+            builder.replyMarkup(markup);
+        }
+
+        try {
+            bot.execute(builder.build());
+        } catch (TelegramApiException e) {
+            e.printStackTrace();
+        }
     }
 
     // ─── Отправка фото ────────────────────────────────────────────────────────
@@ -129,31 +212,6 @@ public class TelegramService {
         }
     }
 
-    // ─── Редактирование с авто-разбором формата ──────────────────────────────
-
-    /**
-     * Если путь указан и файл существует — редактирует подпись (editCaption),
-     * иначе — редактирует текст (editMessage).
-     */
-    public void editMessageAuto(TelegramClient bot, Long chatId, Integer messageId, String raw) {
-        editMessageAuto(bot, chatId, messageId, raw, null);
-    }
-
-    public void editMessageAuto(TelegramClient bot, Long chatId, Integer messageId, String raw, InlineKeyboardMarkup markup) {
-        String[] parts = parseTextAndPath(raw);
-        String text = parts[0];
-        String path = parts[1];
-
-        if (path != null) {
-            File photo = new File(path);
-            if (photo.exists()) {
-                editCaption(chatId, messageId, text, markup);
-                return;
-            }
-        }
-        editMessage(bot, chatId, messageId, text, markup);
-    }
-
     // ─── Редактирование подписи к фото ────────────────────────────────────────
 
     public void editCaption(Long chatId, Integer messageId, String caption) {
@@ -184,7 +242,7 @@ public class TelegramService {
         }
     }
 
-    // ─── Остальные методы (без изменений) ─────────────────────────────────────
+    // ─── Остальные методы ─────────────────────────────────────────────────────
 
     public String getUsernameByUserId(Long userId) {
         try {
@@ -193,7 +251,6 @@ public class TelegramService {
                     .build();
 
             Chat chat = telegramClient.execute(getChat);
-
             String username = chat.getUserName();
 
             if (username != null && !username.isEmpty()) {
