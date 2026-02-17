@@ -1,0 +1,26 @@
+[versions]
+spring-boot = "4.1.0-M1"
+postgresql = "42.7.3"
+lombok = "1.18.42"
+telegram = "9.2.1"
+spring-dependency-management = "1.1.7"
+
+[libraries]
+# Spring
+spring-boot-starter = { module = "org.springframework.boot:spring-boot-starter", version.ref = "spring-boot" }
+spring-boot-starter-data-jpa = { module = "org.springframework.boot:spring-boot-starter-data-jpa", version.ref = "spring-boot" }
+spring-boot-starter-webmvc = { module = "org.springframework.boot:spring-boot-starter-webmvc", version.ref = "spring-boot" }
+
+# Database
+postgresql = { module = "org.postgresql:postgresql", version.ref = "postgresql" }
+
+# Lombok
+lombok = { module = "org.projectlombok:lombok", version.ref = "lombok" }
+
+# Telegram
+telegram-client = { module = "org.telegram:telegrambots-client", version.ref = "telegram" }
+telegram-longpolling = { module = "org.telegram:telegrambots-longpolling", version.ref = "telegram" }
+
+[plugins]
+spring-boot = { id = "org.springframework.boot", version.ref = "spring-boot" }
+spring-dependency-management = { id = "io.spring.dependency-management", version.ref = "spring-dependency-management" }

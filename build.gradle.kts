@@ -1,0 +1,34 @@
+plugins {
+    id("java")
+    alias(libs.plugins.spring.boot)
+    alias(libs.plugins.spring.dependency.management)
+}
+
+group = "ru.lewis.leykabot"
+version = "1.0-SNAPSHOT"
+
+repositories {
+    maven { url = uri("https://jitpack.io") }
+    mavenCentral()
+}
+
+dependencies {
+    // Spring
+    implementation(libs.spring.boot.starter)
+    implementation(libs.spring.boot.starter.data.jpa)
+    implementation(libs.spring.boot.starter.webmvc)
+    implementation("org.springframework.boot:spring-boot-starter-restclient")
+
+    // Database
+    runtimeOnly(libs.postgresql)
+
+    // Lombok
+    compileOnly(libs.lombok)
+    annotationProcessor(libs.lombok)
+
+    // Telegram
+    implementation(libs.telegram.client)
+    implementation(libs.telegram.longpolling)
+
+    implementation("org.ton.ton4j:smartcontract:1.3.5")
+}

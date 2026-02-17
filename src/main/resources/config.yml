@@ -1,0 +1,29 @@
+telegram:
+  channel-check-subscribe: '@leykastars'
+  log-channel-id: -1003793323415
+  log-channel-topic-id: 2
+  bot:
+    token: '7984022655:AAFTVXMm40n0PYri11qxeVy9_9ruv2AJ420'
+    name: 'leykastars_bot'
+
+dev-mode:
+  enable: true
+  whitelist:
+    - 6533681747
+
+stars:
+  markup: 1.3
+
+ton:
+  network:
+    type: mainnet
+    timeout: 30000 # в течение скольки времени (в миллесекундах) будет проходить проверка соединения
+    checkout: 2000 # каждые сколько миллисекунд будет проверка соединения
+  wallet:
+    mnemonic: "company promote injury bless parent frown tiny sport dynamic globe marine engage pizza various project lake image primary artwork into diet base yellow all"
+    api-key: "0b7a752f555fc7d79977b7578a0385d6ee0f2aadd568554135cb6a076f5100e4"
+
+fragment:
+  api-url: https://fragment.com/api
+  hash: 5e8d967d101586dec1
+  cookies: stel_ssid=9af73ac18a72a02ef5_11297726451979062422; stel_dt=-180; stel_token=772998c109c450fc1eb86074db6d2fcc772998db772990b5a779b38656e188546550b; stel_ton_token=QOxxqjpVvAQkPjA4Xwdv7N1RqpQ6Zd5fGIwJEfUOdH-4KY007mgAHkCq8NrAQFabg8JpRSQvB3g9IzWXq3HBESOwGXqVluiby2k3m0fMeWF-b-REtvBegl0nXY_w3GXKVyFPWBkhTlM90X0BStmvNWJFO_yrphL2QaVlQxiX0VH90pYNJx1ZZC2i4XCA3oSNNG113xxt
