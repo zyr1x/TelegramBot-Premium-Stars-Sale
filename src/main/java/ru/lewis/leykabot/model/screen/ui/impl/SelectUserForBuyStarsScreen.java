@@ -64,19 +64,19 @@ public class SelectUserForBuyStarsScreen extends AbstractScreen {
         switch (callback) {
             case "yourself": {
                 username = telegramService.getUsernameByUserId(userId);
-                telegramService.sendMessage(chatId, clientMessageConfig.getSelectYourself());
+                telegramService.sendMessageAuto(chatId, clientMessageConfig.getSelectYourself());
                 break;
             }
             case "other": {
                 isOther = true;
-                telegramService.sendMessage(chatId, clientMessageConfig.getSelectOther());
+                telegramService.sendMessageAuto(chatId, clientMessageConfig.getSelectOther());
                 break;
             }
             case "confirm": {
                 fragmentStarsService.searchRecipient(username, stars)
                         .thenCompose(found -> {
                             if (found.getError() != null || !found.isOk()) {
-                                telegramService.sendMessage(chatId, errorMessageConfig.getUsernameNotFound());
+                                telegramService.sendMessageAuto(chatId, errorMessageConfig.getUsernameNotFound());
                                 return CompletableFuture.completedFuture(null);
                             }
                             var recipient = found.getFound().getRecipient();
@@ -85,7 +85,7 @@ public class SelectUserForBuyStarsScreen extends AbstractScreen {
                         .thenCompose(initResponse -> {
                             if (initResponse == null) return CompletableFuture.completedFuture(null);
                             if (initResponse.getError() != null && initResponse.getReq_id() == null) {
-                                telegramService.sendMessage(chatId, MessageFormat.format(errorMessageConfig.getFragmentError(), initResponse.getError()));
+                                telegramService.sendMessageAuto(chatId, MessageFormat.format(errorMessageConfig.getFragmentError(), initResponse.getError()));
                                 return CompletableFuture.completedFuture(null);
                             }
                             return fragmentStarsService.createTransaction(initResponse.getReq_id());
@@ -93,17 +93,17 @@ public class SelectUserForBuyStarsScreen extends AbstractScreen {
                         .thenAccept(transaction -> {
                             if (transaction == null) return;
                             if (transaction.getError() != null) {
-                                telegramService.sendMessage(chatId, MessageFormat.format(errorMessageConfig.getBuyStarsMethodError(), transaction.getError()));
+                                telegramService.sendMessageAuto(chatId, MessageFormat.format(errorMessageConfig.getBuyStarsMethodError(), transaction.getError()));
                                 return;
                             }
 
                             var balance = userService.getBalance(userId);
                             if (balance.isEmpty() || balance.get() < rubles) {
-                                telegramService.sendMessage(chatId, clientMessageConfig.getRublesNotEnough());
+                                telegramService.sendMessageAuto(chatId, clientMessageConfig.getRublesNotEnough());
                                 return;
                             }
 
-                            telegramService.sendMessage(chatId, MessageFormat.format(clientMessageConfig.getThanksForPayment(), stars, rubles));
+                            telegramService.sendMessageAuto(chatId, MessageFormat.format(clientMessageConfig.getThanksForPayment(), stars, rubles));
                             transactionService.createPurchaseTransaction(userId, -rubles, stars);
                             screenManager.updateScreen(chatId, screenFactory.createProfileScreen(chatId, userId));
 
@@ -126,7 +126,7 @@ public class SelectUserForBuyStarsScreen extends AbstractScreen {
         if (isOther) {
             username = text;
             isOther = false;
-            telegramService.sendMessage(chatId, MessageFormat.format(clientMessageConfig.getIntroducedUsername(), text));
+            telegramService.sendMessageAuto(chatId, MessageFormat.format(clientMessageConfig.getIntroducedUsername(), text));
         }
     }
 

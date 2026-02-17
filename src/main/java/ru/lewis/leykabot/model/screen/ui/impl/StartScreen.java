@@ -42,7 +42,7 @@ public class StartScreen extends AbstractScreen {
 
     @Override
     public void render(TelegramClient bot) {
-        Message message = telegramService.sendMessage(chatId, getText(), getKeyboard());
+        Message message = telegramService.sendMessageAuto(chatId, getText(), getKeyboard());
         if (message != null) {
             this.currentMessageId = message.getMessageId();
         }

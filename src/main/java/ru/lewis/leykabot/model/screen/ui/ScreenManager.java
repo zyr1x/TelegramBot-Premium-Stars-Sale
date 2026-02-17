@@ -50,7 +50,7 @@ public class ScreenManager {
 
         if (messageId != null) {
             screen.setCurrentMessageId(messageId);
-            telegramService.editMessage(telegramClient, chatId, messageId, screen.getText(), screen.getKeyboard());
+            telegramService.editMessageAuto(telegramClient, chatId, messageId, screen.getText(), screen.getKeyboard());
         } else {
             createScreen(chatId, screen);
         }

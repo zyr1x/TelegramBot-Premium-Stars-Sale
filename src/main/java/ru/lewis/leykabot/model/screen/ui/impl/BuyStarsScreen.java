@@ -68,7 +68,7 @@ public class BuyStarsScreen extends AbstractScreen {
         }
 
         if (devModeConfig.isEnable() && !devModeConfig.getWhitelist().contains(userId)) {
-            telegramService.sendMessage(chatId, clientMessageConfig.getDevelopmentMode());
+            telegramService.sendMessageAuto(chatId, clientMessageConfig.getDevelopmentMode());
             return;
         }
         Map<String, KeyboardLocConfig.BuyStars> starButtons = keyboardLocConfig.getBuyStars();
@@ -77,7 +77,7 @@ public class BuyStarsScreen extends AbstractScreen {
         if (buyStar == null) return;
         if (callback.equals("custom")) {
             isExpectationMessage = true;
-            telegramService.sendMessage(chatId, clientMessageConfig.getStarBuyEnterSum());
+            telegramService.sendMessageAuto(chatId, clientMessageConfig.getStarBuyEnterSum());
             return;
         }
         int rublesMarkup = (int) Math.ceil(buyStar.getAmount() * starsConfig.getMarkup());
@@ -92,10 +92,10 @@ public class BuyStarsScreen extends AbstractScreen {
             var number = Integer.parseInt(text);
 
             if (number > 100000) {
-                telegramService.sendMessage(chatId, errorMessageConfig.getStars().getMaxValue());
+                telegramService.sendMessageAuto(chatId, errorMessageConfig.getStars().getMaxValue());
                 return;
             } else if (number < 50) {
-                telegramService.sendMessage(chatId, errorMessageConfig.getStars().getMinValue());
+                telegramService.sendMessageAuto(chatId, errorMessageConfig.getStars().getMinValue());
                 return;
             }
 
@@ -104,7 +104,7 @@ public class BuyStarsScreen extends AbstractScreen {
 
             isExpectationMessage = false;
         } catch (NumberFormatException exception) {
-            telegramService.sendMessage(chatId, errorMessageConfig.getNumberFormat());
+            telegramService.sendMessageAuto(chatId, errorMessageConfig.getNumberFormat());
         }
     }
 

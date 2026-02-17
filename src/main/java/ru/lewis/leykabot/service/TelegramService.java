@@ -4,8 +4,11 @@ import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.groupadministration.GetChat;
 import org.telegram.telegrambots.meta.api.methods.groupadministration.GetChatMember;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageCaption;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
+import org.telegram.telegrambots.meta.api.objects.InputFile;
 import org.telegram.telegrambots.meta.api.objects.chat.Chat;
 import org.telegram.telegrambots.meta.api.objects.chatmember.ChatMember;
 import org.telegram.telegrambots.meta.api.objects.message.Message;
@@ -13,6 +16,8 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMa
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 import ru.lewis.leykabot.configuration.TelegramConfig;
+
+import java.io.File;
 
 @Service
 public class TelegramService {
@@ -25,6 +30,161 @@ public class TelegramService {
         this.telegramClient = telegramClient;
         this.telegramConfig = telegramConfig;
     }
+
+    // ─── Парсинг формата "ТЕКСТ;путь" ────────────────────────────────────────
+
+    /**
+     * Разбирает строку формата "ТЕКСТ;путь/до/картинки".
+     * Если разделителя нет — путь будет null.
+     */
+    private String[] parseTextAndPath(String raw) {
+        int idx = raw.indexOf(';');
+        if (idx == -1) {
+            return new String[]{raw, null};
+        }
+        String text = raw.substring(0, idx).trim();
+        String path = raw.substring(idx + 1).trim();
+        return new String[]{text, path.isEmpty() ? null : path};
+    }
+
+    // ─── Отправка сообщения с авто-разбором формата ───────────────────────────
+
+    /**
+     * Принимает строку вида "ТЕКСТ;путь" или просто "ТЕКСТ".
+     * Если путь указан и файл существует — отправляет фото с подписью,
+     * иначе — обычное текстовое сообщение.
+     */
+    public Message sendMessageAuto(Long chatId, String raw) {
+        return sendMessageAuto(chatId, raw, null);
+    }
+
+    public Message sendMessageAuto(Long chatId, String raw, InlineKeyboardMarkup markup) {
+        String[] parts = parseTextAndPath(raw);
+        String text = parts[0];
+        String path = parts[1];
+
+        if (path != null) {
+            File photo = new File(path);
+            if (photo.exists()) {
+                return sendPhoto(chatId, photo, text, markup);
+            }
+        }
+        return sendMessage(chatId, text, markup);
+    }
+
+    // ─── Отправка фото ────────────────────────────────────────────────────────
+
+    public Message sendPhoto(Long chatId, File photo, String caption) {
+        return sendPhoto(chatId, photo, caption, null);
+    }
+
+    public Message sendPhoto(Long chatId, File photo, String caption, InlineKeyboardMarkup markup) {
+        if (caption != null && caption.length() > MAX_MESSAGE_LENGTH) {
+            caption = caption.substring(0, MAX_MESSAGE_LENGTH - 50) + "\n\n... (сообщение обрезано)";
+        }
+
+        var builder = SendPhoto.builder()
+                .chatId(chatId)
+                .photo(new InputFile(photo))
+                .parseMode("HTML");
+
+        if (caption != null && !caption.isEmpty()) {
+            builder.caption(caption);
+        }
+        if (markup != null) {
+            builder.replyMarkup(markup);
+        }
+
+        try {
+            return telegramClient.execute(builder.build());
+        } catch (TelegramApiException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    /** Отправка фото по fileId или URL */
+    public Message sendPhoto(Long chatId, String fileIdOrUrl, String caption, InlineKeyboardMarkup markup) {
+        if (caption != null && caption.length() > MAX_MESSAGE_LENGTH) {
+            caption = caption.substring(0, MAX_MESSAGE_LENGTH - 50) + "\n\n... (сообщение обрезано)";
+        }
+
+        var builder = SendPhoto.builder()
+                .chatId(chatId)
+                .photo(new InputFile(fileIdOrUrl))
+                .parseMode("HTML");
+
+        if (caption != null && !caption.isEmpty()) {
+            builder.caption(caption);
+        }
+        if (markup != null) {
+            builder.replyMarkup(markup);
+        }
+
+        try {
+            return telegramClient.execute(builder.build());
+        } catch (TelegramApiException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    // ─── Редактирование с авто-разбором формата ──────────────────────────────
+
+    /**
+     * Если путь указан и файл существует — редактирует подпись (editCaption),
+     * иначе — редактирует текст (editMessage).
+     */
+    public void editMessageAuto(TelegramClient bot, Long chatId, Integer messageId, String raw) {
+        editMessageAuto(bot, chatId, messageId, raw, null);
+    }
+
+    public void editMessageAuto(TelegramClient bot, Long chatId, Integer messageId, String raw, InlineKeyboardMarkup markup) {
+        String[] parts = parseTextAndPath(raw);
+        String text = parts[0];
+        String path = parts[1];
+
+        if (path != null) {
+            File photo = new File(path);
+            if (photo.exists()) {
+                editCaption(chatId, messageId, text, markup);
+                return;
+            }
+        }
+        editMessage(bot, chatId, messageId, text, markup);
+    }
+
+    // ─── Редактирование подписи к фото ────────────────────────────────────────
+
+    public void editCaption(Long chatId, Integer messageId, String caption) {
+        editCaption(chatId, messageId, caption, null);
+    }
+
+    public void editCaption(Long chatId, Integer messageId, String caption, InlineKeyboardMarkup markup) {
+        if (caption != null && caption.length() > MAX_MESSAGE_LENGTH) {
+            caption = caption.substring(0, MAX_MESSAGE_LENGTH - 50) + "\n\n... (сообщение обрезано)";
+        }
+
+        var builder = EditMessageCaption.builder()
+                .chatId(chatId)
+                .messageId(messageId)
+                .parseMode("HTML");
+
+        if (caption != null) {
+            builder.caption(caption);
+        }
+        if (markup != null) {
+            builder.replyMarkup(markup);
+        }
+
+        try {
+            telegramClient.execute(builder.build());
+        } catch (TelegramApiException e) {
+            e.printStackTrace();
+        }
+    }
+
+    // ─── Остальные методы (без изменений) ─────────────────────────────────────
 
     public String getUsernameByUserId(Long userId) {
         try {
@@ -132,7 +292,7 @@ public class TelegramService {
     }
 
     public void editMessage(TelegramClient bot, Long chatId, Integer messageId, String text) {
-        editMessage(bot, chatId, messageId, text,null);
+        editMessage(bot, chatId, messageId, text, null);
     }
 
     public void editMessage(TelegramClient bot, Long chatId, Integer messageId, String text, InlineKeyboardMarkup inlineKeyboardMarkup) {

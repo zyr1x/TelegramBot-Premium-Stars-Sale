@@ -65,7 +65,7 @@ public class DepositRublesScreen extends AbstractScreen {
         }
 
         if (devModeConfig.isEnable() && !devModeConfig.getWhitelist().contains(userId)) {
-            telegramService.sendMessage(chatId, clientMessageConfig.getDevelopmentMode());
+            telegramService.sendMessageAuto(chatId, clientMessageConfig.getDevelopmentMode());
             return;
         }
         Map<String, KeyboardLocConfig.Deposit> depositButtons = keyboardLocConfig.getDepositRubles();
@@ -74,11 +74,11 @@ public class DepositRublesScreen extends AbstractScreen {
         if (deposit == null) return;
         if (callback.equals("custom")) {
             isExpectationMessage = true;
-            telegramService.sendMessage(chatId, clientMessageConfig.getDepositEnterSum());
+            telegramService.sendMessageAuto(chatId, clientMessageConfig.getDepositEnterSum());
             return;
         }
         transactionService.createPurchaseTransaction(userId, deposit.getAmount(), 0);
-        telegramService.sendMessage(chatId, clientMessageConfig.getSuccessfullyCreatedTransaction());
+        telegramService.sendMessageAuto(chatId, clientMessageConfig.getSuccessfullyCreatedTransaction());
     }
 
     @Override
@@ -89,17 +89,17 @@ public class DepositRublesScreen extends AbstractScreen {
             var number = Integer.parseInt(text);
 
             if (number > 100000) {
-                telegramService.sendMessage(chatId, errorMessageConfig.getRubles().getMaxValue());
+                telegramService.sendMessageAuto(chatId, errorMessageConfig.getRubles().getMaxValue());
                 return;
             } else if (number < 10) {
-                telegramService.sendMessage(chatId, errorMessageConfig.getRubles().getMinValue());
+                telegramService.sendMessageAuto(chatId, errorMessageConfig.getRubles().getMinValue());
                 return;
             }
             transactionService.createPurchaseTransaction(userId, number, 0);
-            telegramService.sendMessage(chatId, clientMessageConfig.getSuccessfullyCreatedTransaction());
+            telegramService.sendMessageAuto(chatId, clientMessageConfig.getSuccessfullyCreatedTransaction());
             isExpectationMessage = false;
         } catch (NumberFormatException exception) {
-            telegramService.sendMessage(chatId, errorMessageConfig.getNumberFormat());
+            telegramService.sendMessageAuto(chatId, errorMessageConfig.getNumberFormat());
         }
     }
 
