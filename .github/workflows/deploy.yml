@@ -1,0 +1,23 @@
+name: deploy.yml
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 'ssh and deploy'
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd /home/tg/leyka_bot
+            git pull origin main
+            docker-compose stop leykabot
+            docker-compose rm -f leykabot
+            docker-compose up -d --build leykabot
