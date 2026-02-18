@@ -61,7 +61,7 @@ public class BuyStarsScreen extends AbstractScreen {
     public void handleCallback(String callback, TelegramClient bot) {
         switch (callback) {
             case "back":
-                screenManager.updateScreen(chatId, screenFactory.createProfileScreen(chatId, userId));
+                screenManager.updateScreen(chatId, screenFactory.createStartScreen(chatId, userId));
                 break;
             default:
                 break;

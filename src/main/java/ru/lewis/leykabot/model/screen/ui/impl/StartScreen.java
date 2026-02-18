@@ -60,6 +60,10 @@ public class StartScreen extends AbstractScreen {
             case "links":
                 screenManager.updateScreen(chatId, screenFactory.createLinksScreen(chatId, userId));
                 break;
+            case "buy-stars": {
+                screenManager.updateScreen(chatId, screenFactory.createBuyStarsScreen(chatId, userId));
+                break;
+            }
             default:
                 break;
         }
@@ -75,27 +79,35 @@ public class StartScreen extends AbstractScreen {
         List<InlineKeyboardRow> keyboard = new ArrayList<>();
 
         InlineKeyboardRow row1 = new InlineKeyboardRow();
+        InlineKeyboardButton buyStarsButton = InlineKeyboardButton.builder()
+                .text(buttonsLocConfig.getBuyStars())
+                .callbackData("buy-stars")
+                .build();
+        row1.add(buyStarsButton);
+
+        InlineKeyboardRow row2 = new InlineKeyboardRow();
         InlineKeyboardButton profileButton = InlineKeyboardButton.builder()
                 .text(buttonsLocConfig.getProfile())
                 .callbackData("profile")
                 .build();
-        row1.add(profileButton);
+        row2.add(profileButton);
 
+        InlineKeyboardRow row3 = new InlineKeyboardRow();
         InlineKeyboardButton supportButton = InlineKeyboardButton.builder()
                 .text(buttonsLocConfig.getSupport())
                 .callbackData("support")
                 .build();
-        row1.add(supportButton);
+        row3.add(supportButton);
 
-        InlineKeyboardRow row2 = new InlineKeyboardRow();
         InlineKeyboardButton linksButton = InlineKeyboardButton.builder()
                 .text(buttonsLocConfig.getLinks())
                 .callbackData("links")
                 .build();
-        row2.add(linksButton);
+        row3.add(linksButton);
 
         keyboard.add(row1);
         keyboard.add(row2);
+        keyboard.add(row3);
 
         return InlineKeyboardMarkup.builder()
                 .keyboard(keyboard)

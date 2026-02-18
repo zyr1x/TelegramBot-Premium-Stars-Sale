@@ -9,12 +9,9 @@ import org.telegram.telegrambots.meta.generics.TelegramClient;
 import ru.lewis.leykabot.configuration.loc.ButtonsLocConfig;
 import ru.lewis.leykabot.configuration.loc.ClientMessageConfig;
 import ru.lewis.leykabot.configuration.TelegramConfig;
-import ru.lewis.leykabot.service.FragmentStarsService;
-import ru.lewis.leykabot.service.TelegramService;
+import ru.lewis.leykabot.service.*;
 import ru.lewis.leykabot.model.screen.ui.ScreenFactory;
 import ru.lewis.leykabot.model.screen.ui.ScreenManager;
-import ru.lewis.leykabot.service.TonService;
-import ru.lewis.leykabot.service.UserService;
 
 @Component
 @AllArgsConstructor
@@ -30,6 +27,8 @@ public class TelegramBot implements LongPollingSingleThreadUpdateConsumer {
     private final UserService userService;
     private final FragmentStarsService fragmentStarsService;
     private final TonService tonService;
+    private final TransactionService transactionService;
+    private final CodeService codeService;
 
     @Override
     public void consume(Update update) {
@@ -74,6 +73,11 @@ public class TelegramBot implements LongPollingSingleThreadUpdateConsumer {
                 userService.createUser(userId);
             }
             screenManager.createScreen(chatId, screenFactory.createStartScreen(chatId, userId));
+            userService.warmUp(userId);
+            userService.warmUpReferrals(userId);
+            userService.warmUpActivatedReferrals(userId);
+            transactionService.warmUp(userId);
+            codeService.warmUpUserCodes(userId);
             return;
         }
 

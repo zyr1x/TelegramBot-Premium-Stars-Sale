@@ -54,10 +54,6 @@ public class ProfileScreen extends AbstractScreen {
                 screenManager.updateScreen(chatId, screenFactory.createDepositRublesScreen(chatId, userId));
                 break;
             }
-            case "buy-stars": {
-                screenManager.updateScreen(chatId, screenFactory.createBuyStarsScreen(chatId, userId));
-                break;
-            }
             default:
                 break;
         }
@@ -66,14 +62,7 @@ public class ProfileScreen extends AbstractScreen {
     @Override
     protected InlineKeyboardMarkup getKeyboard() {
         List<InlineKeyboardRow> keyboard = new ArrayList<>();
-
         InlineKeyboardRow row1 = new InlineKeyboardRow();
-        InlineKeyboardButton backButton = InlineKeyboardButton.builder()
-                .text(buttonsLocConfig.getBack())
-                .callbackData("back")
-                .build();
-        row1.add(backButton);
-
         InlineKeyboardButton depositButton = InlineKeyboardButton.builder()
                 .text(buttonsLocConfig.getDeposit())
                 .callbackData("deposit")
@@ -81,11 +70,11 @@ public class ProfileScreen extends AbstractScreen {
         row1.add(depositButton);
 
         InlineKeyboardRow row2 = new InlineKeyboardRow();
-        InlineKeyboardButton buyStarsButton = InlineKeyboardButton.builder()
-                .text(buttonsLocConfig.getBuyStars())
-                .callbackData("buy-stars")
+        InlineKeyboardButton backButton = InlineKeyboardButton.builder()
+                .text(buttonsLocConfig.getBack())
+                .callbackData("back")
                 .build();
-        row2.add(buyStarsButton);
+        row2.add(backButton);
 
         keyboard.add(row1);
         keyboard.add(row2);

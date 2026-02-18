@@ -18,6 +18,7 @@ dependencies {
     implementation(libs.spring.boot.starter.data.jpa)
     implementation(libs.spring.boot.starter.webmvc)
     implementation("org.springframework.boot:spring-boot-starter-restclient")
+    implementation("org.springframework.boot:spring-boot-starter-cache")
 
     // Database
     runtimeOnly(libs.postgresql)
@@ -31,4 +32,6 @@ dependencies {
     implementation(libs.telegram.longpolling)
 
     implementation("org.ton.ton4j:smartcontract:1.3.5")
+
+    implementation("com.github.ben-manes.caffeine:caffeine:3.2.3")
 }

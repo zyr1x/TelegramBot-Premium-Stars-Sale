@@ -59,7 +59,7 @@ public class DepositRublesScreen extends AbstractScreen {
         switch (callback) {
             case "back":
                 screenManager.updateScreen(chatId, screenFactory.createProfileScreen(chatId, userId));
-                break;
+                return;
             default:
                 break;
         }

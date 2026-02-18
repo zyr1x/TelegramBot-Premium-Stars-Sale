@@ -1,5 +1,8 @@
 package ru.lewis.leykabot.service;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -11,6 +14,7 @@ import ru.lewis.leykabot.repository.TransactionRepository;
 import ru.lewis.leykabot.repository.UserRepository;
 
 import java.text.MessageFormat;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -24,9 +28,43 @@ public class TransactionService {
     private final TelegramService telegramService;
     private final LogMessageConfig logMessageConfig;
 
-    /**
-     * Создать транзакцию покупки звёзд
-     */
+    // Единственный кэш — список транзакций DESC. Всё остальное считается из него.
+    private Cache<Long, List<Transaction>> transactionCache;
+
+    @PostConstruct
+    public void initCaches() {
+        transactionCache = Caffeine.newBuilder()
+                .maximumSize(500)
+                .expireAfterWrite(Duration.ofMinutes(5))
+                .build();
+    }
+
+    // -------------------------------------------------------------------------
+    // Кэш
+    // -------------------------------------------------------------------------
+
+    /** Подгружает транзакции в кэш. Если уже есть — возвращает из кэша. */
+    public List<Transaction> warmUp(Long telegramId) {
+        return transactionCache.get(telegramId,
+                id -> transactionRepository.findByTelegramIdOrderByCreatedAtDesc(id));
+    }
+
+    /** Принудительно перечитывает из БД и обновляет кэш. */
+    public List<Transaction> refreshCache(Long telegramId) {
+        List<Transaction> fresh = transactionRepository.findByTelegramIdOrderByCreatedAtDesc(telegramId);
+        transactionCache.put(telegramId, fresh);
+        return fresh;
+    }
+
+    /** Инвалидирует кэш пользователя. */
+    public void invalidateCache(Long telegramId) {
+        transactionCache.invalidate(telegramId);
+    }
+
+    // -------------------------------------------------------------------------
+    // Основные методы — все через кэш
+    // -------------------------------------------------------------------------
+
     @Transactional
     public Transaction createPurchaseTransaction(Long telegramId, Integer amountRubles, Integer amountStars) {
         User user = userRepository.findByTelegramId(telegramId)
@@ -36,123 +74,93 @@ public class TransactionService {
         transaction.setTelegramId(telegramId);
         transaction.setAmountRubles(amountRubles);
         transaction.setAmountStars(amountStars);
-
-        Transaction savedTransaction = transactionRepository.save(transaction);
+        Transaction saved = transactionRepository.save(transaction);
 
         user.setBalance(user.getBalance() + amountRubles);
         userRepository.save(user);
 
-        var tag = telegramService.getUsernameByUserId(telegramId);
+        // После записи инвалидируем — следующий warmUp подхватит актуальный список
+        invalidateCache(telegramId);
 
+        var tag = telegramService.getUsernameByUserId(telegramId);
         log.info("Создана транзакция покупки для пользователя {} {}: {} руб. -> {} звёзд",
                 tag, telegramId, amountRubles, amountStars);
-
         telegramService.log(MessageFormat.format(logMessageConfig.getTransactionCreate(),
                 tag, telegramId, amountRubles, amountStars));
 
-        return savedTransaction;
+        return saved;
     }
 
-    /**
-     * Получить все транзакции пользователя
-     */
+    /** Все транзакции — из кэша. */
     public List<Transaction> getUserTransactions(Long telegramId) {
-        return transactionRepository.findByTelegramIdOrderByCreatedAtDesc(telegramId);
+        return warmUp(telegramId);
     }
 
-    /**
-     * Получить транзакции за период
-     */
-    public List<Transaction> getUserTransactionsByDateRange(Long telegramId,
-                                                            LocalDateTime startDate,
-                                                            LocalDateTime endDate) {
-        return transactionRepository.findByTelegramIdAndDateRange(telegramId, startDate, endDate);
+    /** Фильтрация по диапазону дат — из кэша, без запроса в БД. */
+    public List<Transaction> getUserTransactionsByDateRange(
+            Long telegramId, LocalDateTime startDate, LocalDateTime endDate) {
+        return warmUp(telegramId).stream()
+                .filter(t -> !t.getCreatedAt().isBefore(startDate)
+                        && !t.getCreatedAt().isAfter(endDate))
+                .toList();
     }
 
-    /**
-     * Получить последние N транзакций
-     */
+    /** Последние N транзакций — из кэша. */
     public List<Transaction> getLastUserTransactions(Long telegramId, int limit) {
-        List<Transaction> transactions = transactionRepository.findByTelegramIdOrderByCreatedAtDesc(telegramId);
-        return transactions.stream().limit(limit).toList();
+        return warmUp(telegramId).stream().limit(limit).toList();
     }
 
-    /**
-     * Получить общую сумму купленных звёзд
-     */
-    public Long getTotalStarsPurchased(Long telegramId) {
-        Long total = transactionRepository.getTotalStarsByTelegramId(telegramId);
-        return total != null ? total : 0L;
-    }
-
-    /**
-     * Получить количество транзакций пользователя
-     */
-    public Long getTransactionCount(Long telegramId) {
-        return transactionRepository.countByTelegramId(telegramId);
-    }
-
-    /**
-     * Получить статистику транзакций за последний месяц
-     */
-    public TransactionStats getMonthlyStats(Long telegramId) {
-        LocalDateTime now = LocalDateTime.now();
-        LocalDateTime monthAgo = now.minusMonths(1);
-
-        List<Transaction> monthlyTransactions = transactionRepository
-                .findByTelegramIdAndDateRange(telegramId, monthAgo, now);
-
-        int totalTransactions = monthlyTransactions.size();
-        int totalRubles = monthlyTransactions.stream()
-                .mapToInt(Transaction::getAmountRubles)
+    /** Сумма звёзд — из кэша. */
+    public long getTotalStarsPurchased(Long telegramId) {
+        return warmUp(telegramId).stream()
+                .mapToLong(Transaction::getAmountStars)
                 .sum();
-        int totalStars = monthlyTransactions.stream()
-                .mapToInt(Transaction::getAmountStars)
-                .sum();
-
-        return new TransactionStats(totalTransactions, totalRubles, totalStars);
     }
 
-    /**
-     * Получить общую статистику пользователя
-     */
-    public TransactionStats getAllTimeStats(Long telegramId) {
-        List<Transaction> allTransactions = transactionRepository.findByTelegramId(telegramId);
-
-        int totalTransactions = allTransactions.size();
-        int totalRubles = allTransactions.stream()
-                .mapToInt(Transaction::getAmountRubles)
-                .sum();
-        int totalStars = allTransactions.stream()
-                .mapToInt(Transaction::getAmountStars)
-                .sum();
-
-        return new TransactionStats(totalTransactions, totalRubles, totalStars);
+    /** Количество транзакций — из кэша. */
+    public long getTransactionCount(Long telegramId) {
+        return warmUp(telegramId).size();
     }
 
-    /**
-     * Проверить, есть ли у пользователя транзакции
-     */
+    /** Есть ли транзакции — из кэша. */
     public boolean hasTransactions(Long telegramId) {
-        return transactionRepository.countByTelegramId(telegramId) > 0;
+        return !warmUp(telegramId).isEmpty();
     }
 
-    /**
-     * Получить транзакцию по ID
-     */
+    /** Статистика за последний месяц — из кэша. */
+    public TransactionStats getMonthlyStats(Long telegramId) {
+        LocalDateTime monthAgo = LocalDateTime.now().minusMonths(1);
+        List<Transaction> list = warmUp(telegramId).stream()
+                .filter(t -> t.getCreatedAt().isAfter(monthAgo))
+                .toList();
+        return buildStats(list);
+    }
+
+    /** Статистика за всё время — из кэша. */
+    public TransactionStats getAllTimeStats(Long telegramId) {
+        return buildStats(warmUp(telegramId));
+    }
+
+    /** Транзакция по ID — точечный запрос, кэш здесь не нужен. */
     public Transaction getTransactionById(Integer id) {
         return transactionRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Транзакция не найдена"));
     }
 
-    /**
-     * Статистика транзакций
-     */
+    // -------------------------------------------------------------------------
+    // Вспомогательное
+    // -------------------------------------------------------------------------
+
+    private TransactionStats buildStats(List<Transaction> list) {
+        int totalRubles = list.stream().mapToInt(Transaction::getAmountRubles).sum();
+        int totalStars  = list.stream().mapToInt(Transaction::getAmountStars).sum();
+        return new TransactionStats(list.size(), totalRubles, totalStars);
+    }
+
     public record TransactionStats(int totalTransactions, int totalRubles, int totalStars) {
         public double getAverageStarsPerTransaction() {
             return totalTransactions > 0 ? (double) totalStars / totalTransactions : 0.0;
         }
-
         public double getAverageRublesPerTransaction() {
             return totalTransactions > 0 ? (double) totalRubles / totalTransactions : 0.0;
         }

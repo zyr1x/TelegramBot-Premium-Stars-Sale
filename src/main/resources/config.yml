@@ -1,10 +1,11 @@
 telegram:
   channel-check-subscribe: '@leykastars'
+  channel-check-subscribe-url: 'https://t.me/leykastars'
   log-channel-id: -1003793323415
   log-channel-topic-id: 2
   bot:
-    token: '7984022655:AAFTVXMm40n0PYri11qxeVy9_9ruv2AJ420'
-    name: 'leykastars_bot'
+    token: '8536529679:AAHMbLRNmjiaFYMo9DL7QITvKdGUnvJq0y4'
+    name: 'leykadev_bot'
 
 dev-mode:
   enable: true

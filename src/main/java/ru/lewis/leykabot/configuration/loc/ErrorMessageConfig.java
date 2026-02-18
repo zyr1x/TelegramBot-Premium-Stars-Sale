@@ -10,6 +10,7 @@ import org.springframework.context.annotation.Configuration;
 @Getter
 @Setter
 public class ErrorMessageConfig {
+    private String transactionNotCreated;
     private String buyStarsMethodError;
     private String fragmentError;
     private String usernameNotFound;

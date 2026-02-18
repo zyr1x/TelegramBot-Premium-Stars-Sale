@@ -10,10 +10,7 @@ import ru.lewis.leykabot.configuration.loc.ClientMessageConfig;
 import ru.lewis.leykabot.configuration.loc.ErrorMessageConfig;
 import ru.lewis.leykabot.configuration.loc.KeyboardLocConfig;
 import ru.lewis.leykabot.model.screen.ui.impl.*;
-import ru.lewis.leykabot.service.FragmentStarsService;
-import ru.lewis.leykabot.service.TelegramService;
-import ru.lewis.leykabot.service.TransactionService;
-import ru.lewis.leykabot.service.UserService;
+import ru.lewis.leykabot.service.*;
 
 @Component
 @AllArgsConstructor
@@ -31,6 +28,7 @@ public class ScreenFactory {
     private final DevModeConfig devModeConfig;
     private final FragmentStarsService fragmentStarsService;
     private final StarsConfig starsConfig;
+    private final TonService tonService;
 
     public StartScreen createStartScreen(Long chatId, Long userId) {
         return new StartScreen(chatId, userId, clientMessageConfig, buttonsLocConfig, screenManager, telegramService, telegramConfig,this);
@@ -63,7 +61,7 @@ public class ScreenFactory {
     public SelectUserForBuyStarsScreen createSelectUserForBuyStarsScreen(Long chatId, Long userId, int stars, int rubles) {
         return new SelectUserForBuyStarsScreen(chatId, userId, stars, rubles,
                 clientMessageConfig, buttonsLocConfig, telegramService, fragmentStarsService,
-                errorMessageConfig, transactionService, userService, screenManager, this);
+                errorMessageConfig, transactionService, userService, tonService, screenManager, this);
     }
 
     public SubscribeChannelScreen createSubscribeChannelScreen(Long chatId, Long userId) {

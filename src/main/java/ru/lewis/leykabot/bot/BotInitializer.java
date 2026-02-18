@@ -9,6 +9,7 @@ import org.telegram.telegrambots.longpolling.TelegramBotsLongPollingApplication;
 import ru.lewis.leykabot.configuration.TelegramBotConfig;
 import ru.lewis.leykabot.configuration.TelegramConfig;
 import ru.lewis.leykabot.configuration.loc.LogMessageConfig;
+import ru.lewis.leykabot.service.CodeService;
 import ru.lewis.leykabot.service.TelegramService;
 
 @Component
@@ -20,12 +21,14 @@ public class BotInitializer {
     private final TelegramService telegramService;
     private final LogMessageConfig logMessageConfig;
     private final TelegramConfig telegramConfig;
+    private final CodeService codeService;
 
     @EventListener({ContextRefreshedEvent.class})
     public void init() {
         try {
             TelegramBotsLongPollingApplication botsApplication = new TelegramBotsLongPollingApplication();
             botsApplication.registerBot(config.getToken(), telegramBot);
+            codeService.warmUpAllCodes();
 
             telegramService.sendMessageToTopic(telegramConfig.getLogChannelId(), telegramConfig.getLogChannelTopicId(), logMessageConfig.getAppEnable());
         } catch (Exception e) {

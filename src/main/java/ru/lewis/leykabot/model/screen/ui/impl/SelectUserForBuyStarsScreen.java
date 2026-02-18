@@ -4,16 +4,14 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMa
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardRow;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
+import org.ton.ton4j.smartcontract.SendResponse;
 import ru.lewis.leykabot.configuration.loc.ButtonsLocConfig;
 import ru.lewis.leykabot.configuration.loc.ClientMessageConfig;
 import ru.lewis.leykabot.configuration.loc.ErrorMessageConfig;
 import ru.lewis.leykabot.model.screen.ui.AbstractScreen;
 import ru.lewis.leykabot.model.screen.ui.ScreenFactory;
 import ru.lewis.leykabot.model.screen.ui.ScreenManager;
-import ru.lewis.leykabot.service.FragmentStarsService;
-import ru.lewis.leykabot.service.TelegramService;
-import ru.lewis.leykabot.service.TransactionService;
-import ru.lewis.leykabot.service.UserService;
+import ru.lewis.leykabot.service.*;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -29,6 +27,7 @@ public class SelectUserForBuyStarsScreen extends AbstractScreen {
     private final ErrorMessageConfig errorMessageConfig;
     private final TransactionService transactionService;
     private final UserService userService;
+    private final TonService tonService;
     private final ScreenManager screenManager;
     private final ScreenFactory screenFactory;
 
@@ -43,6 +42,7 @@ public class SelectUserForBuyStarsScreen extends AbstractScreen {
                                        ErrorMessageConfig errorMessageConfig,
                                        TransactionService transactionService,
                                        UserService userService,
+                                       TonService tonService,
                                        ScreenManager screenManager,
                                        ScreenFactory screenFactory) {
         super(chatId, userId);
@@ -55,6 +55,7 @@ public class SelectUserForBuyStarsScreen extends AbstractScreen {
         this.errorMessageConfig = errorMessageConfig;
         this.transactionService = transactionService;
         this.userService = userService;
+        this.tonService = tonService;
         this.screenManager = screenManager;
         this.screenFactory = screenFactory;
     }
@@ -103,9 +104,21 @@ public class SelectUserForBuyStarsScreen extends AbstractScreen {
                                 return;
                             }
 
-                            telegramService.sendMessageAuto(chatId, MessageFormat.format(clientMessageConfig.getThanksForPayment(), stars, rubles));
-                            transactionService.createPurchaseTransaction(userId, -rubles, stars);
-                            screenManager.updateScreen(chatId, screenFactory.createProfileScreen(chatId, userId));
+                            var message = transaction.getTransaction().getMessages().getFirst();
+                            var response = tonService.send(message.getAddress(), message.getPayload(), message.getAmount());
+
+                            response.thenAccept((sendResponse) -> {
+                                var code = sendResponse.getCode();
+                                var sendResponseMessage = sendResponse.getMessage();
+
+                                if (code == 0) {
+                                    telegramService.sendMessageAuto(chatId, MessageFormat.format(clientMessageConfig.getThanksForPayment(), stars, rubles));
+                                    transactionService.createPurchaseTransaction(userId, -rubles, stars);
+                                } else {
+                                    telegramService.sendMessageAuto(chatId, MessageFormat.format(errorMessageConfig.getTransactionNotCreated(), code, sendResponseMessage));
+                                }
+                                screenManager.updateScreen(chatId, screenFactory.createStartScreen(chatId, userId));
+                            });
 
                             isOther = false;
                             username = "";
