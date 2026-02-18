@@ -9,9 +9,12 @@ import org.telegram.telegrambots.meta.generics.TelegramClient;
 import ru.lewis.leykabot.configuration.loc.ButtonsLocConfig;
 import ru.lewis.leykabot.configuration.loc.ClientMessageConfig;
 import ru.lewis.leykabot.configuration.TelegramConfig;
+import ru.lewis.leykabot.configuration.loc.LogMessageConfig;
 import ru.lewis.leykabot.service.*;
 import ru.lewis.leykabot.model.screen.ui.ScreenFactory;
 import ru.lewis.leykabot.model.screen.ui.ScreenManager;
+
+import java.text.MessageFormat;
 
 @Component
 @AllArgsConstructor
@@ -29,6 +32,7 @@ public class TelegramBot implements LongPollingSingleThreadUpdateConsumer {
     private final TonService tonService;
     private final TransactionService transactionService;
     private final CodeService codeService;
+    private final LogMessageConfig logMessageConfig;
 
     @Override
     public void consume(Update update) {
@@ -64,23 +68,51 @@ public class TelegramBot implements LongPollingSingleThreadUpdateConsumer {
         var userId = message.getFrom().getId();
         var chatId = message.getChatId();
 
-        if (text.equals("/start")) {
+        start(text, userId, chatId);
+
+        screenManager.handleMessage(chatId, text);
+    }
+
+    private void start(String message, Long userId, Long chatId) {
+        // command check
+        if (message.startsWith("/start")) {
+            // active referral
+
+            if (message.contains(" ")) {
+                var qrCode = message.split(" ")[1];
+
+                if (userService.activateReferral(qrCode, userId)) {
+                    var referralOwnerId = userService.getReferralOwner(qrCode).get();
+                    var referralOwnerName = telegramService.getUsernameByUserId(referralOwnerId);
+                    var referralActivatedName = telegramService.getUsernameByUserId(userId);
+
+                    var referralAmountActivated = userService.getReferralActivationCount(referralOwnerId);
+
+                    telegramService.sendMessage(chatId, clientMessageConfig.getReferralActivated());
+                    telegramService.sendMessageToTopic(telegramConfig.getLogChannelId(), telegramConfig.getLogChannelTopicId(),
+                            MessageFormat.format(logMessageConfig.getReferralActivated(),
+                                    referralActivatedName, referralOwnerName, referralAmountActivated));
+                }
+            }
+
+            // check sub
             if (!telegramService.isUserSubscribed(userId)) {
                 screenManager.createScreen(chatId, screenFactory.createSubscribeChannelScreen(chatId, userId));
                 return;
             }
+
+            // save user id DB if not exists
             if (!userService.isUserExists(userId)) {
                 userService.createUser(userId);
             }
+
+            // load user cache & create start screen...
             screenManager.createScreen(chatId, screenFactory.createStartScreen(chatId, userId));
             userService.warmUp(userId);
             userService.warmUpReferrals(userId);
             userService.warmUpActivatedReferrals(userId);
             transactionService.warmUp(userId);
             codeService.warmUpUserCodes(userId);
-            return;
         }
-
-        screenManager.handleMessage(chatId, text);
     }
 }

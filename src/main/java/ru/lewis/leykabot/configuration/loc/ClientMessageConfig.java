@@ -20,6 +20,7 @@ public class ClientMessageConfig {
     private String subscribeChannel;
     private String depositCommand;
     private String buyStarsCommand;
+    private String createReferralCommand;
     private String selectUserForBuyStarsCommand;
     private String successfullyCreatedTransaction;
     private String thanksForPayment;
@@ -27,4 +28,6 @@ public class ClientMessageConfig {
     private String selectOther;
     private String introducedUsername;
     private String rublesNotEnough;
+    private String referralLinkMessage;
+    private String referralActivated;
 }

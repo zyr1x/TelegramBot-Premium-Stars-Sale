@@ -145,7 +145,7 @@ public class UserService {
         referralByHashCache.put(hash, saved);
         referralCache.invalidate(userId); // список изменился — инвалидируем
 
-        return "https://t.me/" + telegramBotConfig.getName() + "?start=" + hash;
+        return hashToLink(hash);
     }
 
     @Transactional
@@ -177,7 +177,6 @@ public class UserService {
         User referrer = userCache.get(referral.getUserId(),
                 id -> userRepository.findByTelegramId(id).orElse(null));
         if (referrer != null) {
-            referrer.setBalance(referrer.getBalance() + 100);
             userRepository.save(referrer);
             userCache.put(referrer.getTelegramId(), referrer);
         }
@@ -185,14 +184,38 @@ public class UserService {
         return true;
     }
 
+    public Optional<Long> getReferralOwner(String hash) {
+        Referral referral = referralByHashCache.get(hash,
+                h -> referralRepository.findByHash(h).orElse(null));
+        return Optional.ofNullable(referral).map(Referral::getUserId);
+    }
+
+    public boolean isReferralHashExists(String hash) {
+        Referral referral = referralByHashCache.get(hash,
+                h -> referralRepository.findByHash(h).orElse(null));
+        return referral != null;
+    }
+
     /** Список реферальных ссылок пользователя — из кэша. */
     public List<Referral> getUserReferrals(Long userId) {
         return warmUpReferrals(userId);
     }
 
+    public boolean hasUserReferrals(Long userId) {
+        return !warmUpReferrals(userId).isEmpty();
+    }
+
     /** Количество активированных рефералов пользователя — из кэша. */
     public long getReferralActivationCount(Long userId) {
         return warmUpActivatedReferrals(userId).size();
+    }
+
+    public boolean hasReferralActivation(Long userId) {
+        return !warmUpActivatedReferrals(userId).isEmpty();
+    }
+
+    public String hashToLink(String hash) {
+        return "https://t.me/" + telegramBotConfig.getName() + "?start=" + hash;
     }
 
     // -------------------------------------------------------------------------

@@ -64,6 +64,10 @@ public class StartScreen extends AbstractScreen {
                 screenManager.updateScreen(chatId, screenFactory.createBuyStarsScreen(chatId, userId));
                 break;
             }
+            case "referral": {
+                screenManager.updateScreen(chatId, screenFactory.createReferralScreen(chatId, userId));
+                break;
+            }
             default:
                 break;
         }
@@ -91,6 +95,12 @@ public class StartScreen extends AbstractScreen {
                 .callbackData("profile")
                 .build();
         row2.add(profileButton);
+
+        InlineKeyboardButton referralButton = InlineKeyboardButton.builder()
+                .text(buttonsLocConfig.getReferralSystem())
+                .callbackData("referral")
+                .build();
+        row2.add(referralButton);
 
         InlineKeyboardRow row3 = new InlineKeyboardRow();
         InlineKeyboardButton supportButton = InlineKeyboardButton.builder()

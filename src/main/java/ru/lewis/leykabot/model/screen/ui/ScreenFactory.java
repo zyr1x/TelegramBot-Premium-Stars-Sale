@@ -67,4 +67,8 @@ public class ScreenFactory {
     public SubscribeChannelScreen createSubscribeChannelScreen(Long chatId, Long userId) {
         return new SubscribeChannelScreen(chatId, userId, telegramService, clientMessageConfig, telegramConfig, buttonsLocConfig, screenManager, this);
     }
+
+    public ReferralScreen createReferralScreen(Long chatId, Long userId) {
+        return new ReferralScreen(chatId, userId, userService, buttonsLocConfig, clientMessageConfig, telegramService, screenManager, this);
+    }
 }
