@@ -27,6 +27,7 @@ public class TransactionService {
     private final UserRepository userRepository;
     private final TelegramService telegramService;
     private final LogMessageConfig logMessageConfig;
+    private final UserService userService;
 
     // Единственный кэш — список транзакций DESC. Всё остальное считается из него.
     private Cache<Long, List<Transaction>> transactionCache;
@@ -78,6 +79,7 @@ public class TransactionService {
 
         user.setBalance(user.getBalance() + amountRubles);
         userRepository.save(user);
+        userService.refreshCache(telegramId);
 
         // После записи инвалидируем — следующий warmUp подхватит актуальный список
         invalidateCache(telegramId);
