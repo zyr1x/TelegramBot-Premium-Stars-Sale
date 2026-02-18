@@ -13,12 +13,17 @@ import org.ton.ton4j.smartcontract.wallet.v4.WalletV4R2;
 import org.ton.ton4j.toncenter.TonCenter;
 import org.ton.ton4j.toncenter.TonResponse;
 import org.ton.ton4j.toncenter.model.AddressInformationResponse;
+import ru.lewis.leykabot.configuration.TelegramConfig;
 import ru.lewis.leykabot.configuration.TonConfig;
+import ru.lewis.leykabot.configuration.loc.LogMessageConfig;
 import ru.lewis.leykabot.model.exception.TonRequestException;
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.math.RoundingMode;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.text.MessageFormat;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.concurrent.*;
@@ -27,19 +32,48 @@ import java.util.concurrent.*;
 public class TonService {
     private final TonConfig tonConfig;
     private final TonCenter client;
+    private final TelegramConfig telegramConfig;
+    private final LogMessageConfig logMessageConfig;
 
     private final ScheduledExecutorService scheduler;
 
-    public TonService(TonConfig tonConfig) {
+    private static final BigDecimal NANO = new BigDecimal("1000000000");
+    private final TelegramService telegramService;
+
+    public TonService(TonConfig tonConfig, TelegramService telegramService, TelegramConfig telegramConfig, LogMessageConfig logMessageConfig) {
         this.tonConfig = tonConfig;
         this.client = createClient();
         this.scheduler = Executors.newScheduledThreadPool(10);
+        this.telegramService = telegramService;
+        this.telegramConfig = telegramConfig;
+        this.logMessageConfig = logMessageConfig;
+    }
+
+    public String nanoToTon(String amount) {
+        BigDecimal nano = new BigDecimal(amount);
+        BigDecimal ton = nano.divide(NANO, 9, RoundingMode.DOWN);
+        return ton.stripTrailingZeros().toPlainString();
     }
 
     public CompletableFuture<SendResponse> send(String address, String payloadBase64, String amount) {
         var secret = getSecret();
         var wallet = createWallet(secret);
         wallet.setTonCenterClient(client);
+
+        var balance = getBalance(wallet.getAddress().toBounceable());
+        var balanceBig = new BigInteger(balance);
+        var amountWithGas = new BigInteger(amount).add(BigInteger.valueOf(1_000_000L));
+
+        if (balanceBig.compareTo(amountWithGas) < 0) {
+            telegramService.sendMessageToTopic(telegramConfig.getLogChannelId(), telegramConfig.getLogChannelTopicId(),
+                    MessageFormat.format(logMessageConfig.getBalanceInTonNotEnough(), balance));
+
+            return CompletableFuture.completedFuture(SendResponse.builder()
+                    .code(-1)
+                    .message("balance not enough")
+                    .build()
+            );
+        }
 
         return checkConnectAsync(wallet).thenApply(seqno -> {
             try {

@@ -23,6 +23,7 @@ ton:
   wallet:
     mnemonic: "company promote injury bless parent frown tiny sport dynamic globe marine engage pizza various project lake image primary artwork into diet base yellow all"
     api-key: "0b7a752f555fc7d79977b7578a0385d6ee0f2aadd568554135cb6a076f5100e4"
+    address: 'UQC3iHb-RVzoykSwEEx0d2IbC8FFsiNElIhF2nqn5J0K1bxf'
 
 fragment:
   api-url: https://fragment.com/api

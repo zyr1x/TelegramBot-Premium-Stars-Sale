@@ -26,5 +26,6 @@ public class TonConfig {
     public static class Wallet {
         private String apiKey;
         private String mnemonic;
+        private String address;
     }
 }

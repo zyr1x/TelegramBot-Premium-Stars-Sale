@@ -5,6 +5,7 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKe
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardRow;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 import org.ton.ton4j.smartcontract.SendResponse;
+import ru.lewis.leykabot.configuration.TonConfig;
 import ru.lewis.leykabot.configuration.loc.ButtonsLocConfig;
 import ru.lewis.leykabot.configuration.loc.ClientMessageConfig;
 import ru.lewis.leykabot.configuration.loc.ErrorMessageConfig;
@@ -98,12 +99,11 @@ public class SelectUserForBuyStarsScreen extends AbstractScreen {
                                 return;
                             }
 
-                            var balance = userService.getBalance(userId);
-                            if (balance.isEmpty() || balance.get() < rubles) {
+                            var balanceUser = userService.getBalance(userId);
+                            if (balanceUser.isEmpty() || balanceUser.get() < rubles) {
                                 telegramService.sendMessageAuto(chatId, clientMessageConfig.getRublesNotEnough());
                                 return;
                             }
-
                             transaction.getTransaction().getMessages().forEach(message -> {
                                 var response = tonService.send(message.getAddress(), message.getPayload(), message.getAmount());
 

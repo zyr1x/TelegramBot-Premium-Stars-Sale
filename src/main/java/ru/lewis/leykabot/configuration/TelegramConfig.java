@@ -14,6 +14,4 @@ public class TelegramConfig {
     private String channelCheckSubscribe;
     private Long logChannelId;
     private Integer logChannelTopicId;
-
-
 }

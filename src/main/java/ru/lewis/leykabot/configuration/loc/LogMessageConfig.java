@@ -14,4 +14,5 @@ public class LogMessageConfig {
     private String transactionCreate;
     private String appDisable;
     private String appEnable;
+    private String balanceInTonNotEnough;
 }
