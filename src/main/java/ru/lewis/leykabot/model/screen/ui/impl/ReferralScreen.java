@@ -76,7 +76,7 @@ public class ReferralScreen extends AbstractScreen {
 
         InlineKeyboardRow row1 = new InlineKeyboardRow();
         InlineKeyboardButton createReferral = InlineKeyboardButton.builder()
-                .text(buttonsLocConfig.getReferralSystem())
+                .text(buttonsLocConfig.getReferralCreateLink())
                 .callbackData("create-referral")
                 .build();
         row1.add(createReferral);

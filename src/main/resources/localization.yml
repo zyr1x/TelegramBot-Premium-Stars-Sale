@@ -51,6 +51,7 @@ localization:
     check-sub: '⚠️ Проверить подписку ⚠️'
     go-channel: '👉 Перейти'
     referral-system: 'Реферальная система'
+    referral-create-link: '🤖 Моя реферальная ссылка'
   error-message:
     transaction-not-created: 'Транзакция не создана, деньги не списаны. Код ошибки: {0}, сообщение {1} (Обратитесь к разработчикам)'
     buy-stars-method-error: 'Не получилось создать платеж (Возможно устарел API, обратитесь в ТП) Ответ от API {0}'
