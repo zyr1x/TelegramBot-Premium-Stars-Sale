@@ -66,7 +66,7 @@ public class TonService {
 
         if (balanceBig.compareTo(amountWithGas) < 0) {
             telegramService.sendMessageToTopic(telegramConfig.getLogChannelId(), telegramConfig.getLogChannelTopicId(),
-                    MessageFormat.format(logMessageConfig.getBalanceInTonNotEnough(), balance));
+                    MessageFormat.format(logMessageConfig.getBalanceInTonNotEnough(), amount, balance));
 
             return CompletableFuture.completedFuture(SendResponse.builder()
                     .code(-1)
