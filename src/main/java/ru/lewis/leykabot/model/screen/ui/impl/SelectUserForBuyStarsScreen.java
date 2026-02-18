@@ -104,20 +104,21 @@ public class SelectUserForBuyStarsScreen extends AbstractScreen {
                                 return;
                             }
 
-                            var message = transaction.getTransaction().getMessages().getFirst();
-                            var response = tonService.send(message.getAddress(), message.getPayload(), message.getAmount());
+                            transaction.getTransaction().getMessages().forEach(message -> {
+                                var response = tonService.send(message.getAddress(), message.getPayload(), message.getAmount());
 
-                            response.thenAccept((sendResponse) -> {
-                                var code = sendResponse.getCode();
-                                var sendResponseMessage = sendResponse.getMessage();
+                                response.thenAccept((sendResponse) -> {
+                                    var code = sendResponse.getCode();
+                                    var sendResponseMessage = sendResponse.getMessage();
 
-                                if (code == 0) {
-                                    telegramService.sendMessageAuto(chatId, MessageFormat.format(clientMessageConfig.getThanksForPayment(), stars, rubles));
-                                    transactionService.createPurchaseTransaction(userId, -rubles, stars);
-                                } else {
-                                    telegramService.sendMessageAuto(chatId, MessageFormat.format(errorMessageConfig.getTransactionNotCreated(), code, sendResponseMessage));
-                                }
-                                screenManager.updateScreen(chatId, screenFactory.createStartScreen(chatId, userId));
+                                    if (code == 0) {
+                                        telegramService.sendMessageAuto(chatId, MessageFormat.format(clientMessageConfig.getThanksForPayment(), stars, rubles));
+                                        transactionService.createPurchaseTransaction(userId, -rubles, stars);
+                                    } else {
+                                        telegramService.sendMessageAuto(chatId, MessageFormat.format(errorMessageConfig.getTransactionNotCreated(), code, sendResponseMessage));
+                                    }
+                                    screenManager.updateScreen(chatId, screenFactory.createStartScreen(chatId, userId));
+                                });
                             });
 
                             isOther = false;
