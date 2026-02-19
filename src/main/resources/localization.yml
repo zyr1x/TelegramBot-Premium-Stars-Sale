@@ -11,7 +11,7 @@ localization:
         name: "💎 6 месяцев"
       "twelve-months":
         months: 12
-        base-price: 999
+        base-price: 1999
         name: "💎 12 месяцев"
     buy-stars:
       "one-hundred":
