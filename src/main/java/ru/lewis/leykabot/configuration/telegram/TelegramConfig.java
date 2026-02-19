@@ -1,4 +1,4 @@
-package ru.lewis.leykabot.configuration;
+package ru.lewis.leykabot.configuration.telegram;
 
 import lombok.Getter;
 import lombok.Setter;

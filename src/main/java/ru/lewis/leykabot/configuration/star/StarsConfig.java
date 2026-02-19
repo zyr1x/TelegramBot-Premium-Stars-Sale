@@ -1,4 +1,4 @@
-package ru.lewis.leykabot.configuration;
+package ru.lewis.leykabot.configuration.star;
 
 import lombok.Getter;
 import lombok.Setter;

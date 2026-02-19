@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.stereotype.Component;
-import ru.lewis.leykabot.configuration.TelegramConfig;
+import ru.lewis.leykabot.configuration.telegram.TelegramConfig;
 import ru.lewis.leykabot.configuration.loc.LogMessageConfig;
 import ru.lewis.leykabot.service.TelegramService;
 

@@ -1,4 +1,4 @@
-package ru.lewis.leykabot.configuration;
+package ru.lewis.leykabot.configuration.telegram;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

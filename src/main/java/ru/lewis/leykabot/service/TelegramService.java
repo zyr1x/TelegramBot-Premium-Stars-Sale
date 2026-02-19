@@ -17,7 +17,7 @@ import org.telegram.telegrambots.meta.api.objects.message.Message;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
-import ru.lewis.leykabot.configuration.TelegramConfig;
+import ru.lewis.leykabot.configuration.telegram.TelegramConfig;
 
 import java.io.File;
 import java.net.URL;

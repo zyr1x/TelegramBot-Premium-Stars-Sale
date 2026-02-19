@@ -1,4 +1,4 @@
-package ru.lewis.leykabot.configuration;
+package ru.lewis.leykabot.configuration.prem;
 
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -8,11 +8,6 @@ import org.springframework.stereotype.Component;
 @Component
 @ConfigurationProperties(prefix = "premium")
 public class PremiumConfig {
-
-    /**
-     * Наценка на базовую цену Premium.
-     * Итоговая цена = basePrice * markup
-     */
     private double markup;
 }
 

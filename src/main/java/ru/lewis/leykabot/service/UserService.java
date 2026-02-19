@@ -6,7 +6,7 @@ import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.lewis.leykabot.configuration.TelegramBotConfig;
+import ru.lewis.leykabot.configuration.telegram.TelegramBotConfig;
 import ru.lewis.leykabot.model.database.entity.*;
 import ru.lewis.leykabot.repository.*;
 

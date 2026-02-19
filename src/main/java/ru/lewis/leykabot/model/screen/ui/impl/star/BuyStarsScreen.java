@@ -5,7 +5,7 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKe
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardRow;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 import ru.lewis.leykabot.configuration.DevModeConfig;
-import ru.lewis.leykabot.configuration.StarsConfig;
+import ru.lewis.leykabot.configuration.star.StarsConfig;
 import ru.lewis.leykabot.configuration.loc.ButtonsLocConfig;
 import ru.lewis.leykabot.configuration.loc.ClientMessageConfig;
 import ru.lewis.leykabot.configuration.loc.ErrorMessageConfig;

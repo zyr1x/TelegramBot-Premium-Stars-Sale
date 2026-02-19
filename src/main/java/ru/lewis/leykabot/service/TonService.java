@@ -13,7 +13,7 @@ import org.ton.ton4j.smartcontract.wallet.v4.WalletV4R2;
 import org.ton.ton4j.toncenter.TonCenter;
 import org.ton.ton4j.toncenter.TonResponse;
 import org.ton.ton4j.toncenter.model.AddressInformationResponse;
-import ru.lewis.leykabot.configuration.TelegramConfig;
+import ru.lewis.leykabot.configuration.telegram.TelegramConfig;
 import ru.lewis.leykabot.configuration.TonConfig;
 import ru.lewis.leykabot.configuration.loc.LogMessageConfig;
 import ru.lewis.leykabot.model.exception.TonRequestException;
