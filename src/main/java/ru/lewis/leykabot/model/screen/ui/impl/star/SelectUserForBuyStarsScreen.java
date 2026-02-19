@@ -120,7 +120,7 @@ public class SelectUserForBuyStarsScreen extends AbstractScreen {
                             var sendResponseMessage = sendResponse.getMessage();
 
                             if (code == 0) {
-                                telegramService.sendMessageAuto(chatId, MessageFormat.format(clientMessageConfig.getThanksForPayment(), stars, rubles));
+                                telegramService.sendMessageAuto(chatId, MessageFormat.format(clientMessageConfig.getThanksForPayment(), rubles));
                                 starsTransactionService.create(userId, -rubles, stars);
                             } else {
                                 telegramService.sendMessageAuto(chatId, MessageFormat.format(errorMessageConfig.getTransactionNotCreated(), code, sendResponseMessage));

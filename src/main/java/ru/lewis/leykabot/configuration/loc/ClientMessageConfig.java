@@ -34,7 +34,6 @@ public class ClientMessageConfig {
     // Premium
     private String buyPremiumCommand;
     private String selectUserForBuyPremiumCommand;
-    private String thanksForPremiumPayment;
     private String selectYourselfPremium;
     private String selectOtherPremium;
 }

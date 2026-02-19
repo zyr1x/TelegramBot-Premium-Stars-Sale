@@ -139,8 +139,8 @@ public class SelectUserForBuyPremiumScreen extends AbstractScreen {
                                         );
                                         telegramService.sendMessageAuto(chatId,
                                                 MessageFormat.format(
-                                                        clientMessageConfig.getThanksForPremiumPayment(),
-                                                        months, rubles));
+                                                        clientMessageConfig.getThanksForPayment(),
+                                                        rubles));
                                     } else {
                                         telegramService.sendMessageAuto(chatId,
                                                 MessageFormat.format(
