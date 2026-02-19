@@ -11,15 +11,11 @@ import org.springframework.context.annotation.Configuration;
 @Setter
 public class ErrorMessageConfig {
     private String transactionNotCreated;
-    private String buyStarsMethodError;
     private String fragmentError;
     private String usernameNotFound;
     private String numberFormat;
     private Rubles rubles;
     private Stars stars;
-
-    // --- Premium ---
-    private String buyPremiumMethodError;
     private String usernameNotSelected;
 
     @Getter

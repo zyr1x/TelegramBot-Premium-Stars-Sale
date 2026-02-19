@@ -62,75 +62,76 @@ public class SelectUserForBuyStarsScreen extends AbstractScreen {
     @Override
     public void handleCallback(String callback, TelegramClient bot) {
         switch (callback) {
-            case "yourself": {
+            case "yourself" -> {
                 username = telegramService.getUsernameByUserId(userId);
                 telegramService.sendMessageAuto(chatId, clientMessageConfig.getSelectYourself());
-                break;
             }
-            case "other": {
+
+            case "other" -> {
                 isOther = true;
                 telegramService.sendMessageAuto(chatId, clientMessageConfig.getSelectOther());
-                break;
             }
-            case "confirm": {
-                fragmentStarsService.searchRecipient(username, stars)
-                        .thenCompose(found -> {
-                            if (found.getError() != null || !found.isOk()) {
-                                telegramService.sendMessageAuto(chatId, errorMessageConfig.getUsernameNotFound());
-                                return CompletableFuture.completedFuture(null);
-                            }
-                            var recipient = found.getFound().getRecipient();
-                            return fragmentStarsService.initBuy(recipient, stars);
-                        })
-                        .thenCompose(initResponse -> {
-                            if (initResponse == null) return CompletableFuture.completedFuture(null);
-                            if (initResponse.getError() != null && initResponse.getReq_id() == null) {
-                                telegramService.sendMessageAuto(chatId, MessageFormat.format(errorMessageConfig.getFragmentError(), initResponse.getError()));
-                                return CompletableFuture.completedFuture(null);
-                            }
-                            return fragmentStarsService.createTransaction(initResponse.getReq_id());
-                        })
-                        .thenAccept(transaction -> {
-                            if (transaction == null) return;
-                            if (transaction.getError() != null) {
-                                telegramService.sendMessageAuto(chatId, MessageFormat.format(errorMessageConfig.getBuyStarsMethodError(), transaction.getError()));
-                                return;
-                            }
 
-                            var balanceUser = userService.getBalance(userId);
-                            if (balanceUser.isEmpty() || balanceUser.get() < rubles) {
-                                telegramService.sendMessageAuto(chatId, clientMessageConfig.getRublesNotEnough());
-                                return;
-                            }
-                            transaction.getTransaction().getMessages().forEach(message -> {
-                                var response = tonService.send(message.getAddress(), message.getPayload(), message.getAmount());
+            case "confirm" -> handleConfirm();
 
-                                response.thenAccept((sendResponse) -> {
-                                    var code = sendResponse.getCode();
-                                    var sendResponseMessage = sendResponse.getMessage();
-
-                                    if (code == 0) {
-                                        telegramService.sendMessageAuto(chatId, MessageFormat.format(clientMessageConfig.getThanksForPayment(), stars, rubles));
-                                        starsTransactionService.create(userId, -rubles, stars);
-                                    } else {
-                                        telegramService.sendMessageAuto(chatId, MessageFormat.format(errorMessageConfig.getTransactionNotCreated(), code, sendResponseMessage));
-                                    }
-                                    screenManager.updateScreen(chatId, screenFactory.createStartScreen(chatId, userId));
-                                });
-                            });
-
-                            isOther = false;
-                            username = "";
-                        });
-                break;
-            }
-            case "back": {
-                screenManager.updateScreen(chatId, screenFactory.createBuyStarsScreen(chatId, userId));
-                break;
-            }
-            default:
-                break;
+            case "back" -> screenManager.updateScreen(chatId, screenFactory.createBuyStarsScreen(chatId, userId));
         }
+    }
+
+    private void handleConfirm() {
+        if (username.isBlank()) {
+            telegramService.sendMessageAuto(chatId, errorMessageConfig.getUsernameNotSelected());
+            return;
+        }
+        fragmentStarsService.searchRecipient(username, stars)
+                .thenCompose(found -> {
+                    if (found.getError() != null || !found.isOk()) {
+                        telegramService.sendMessageAuto(chatId, errorMessageConfig.getUsernameNotFound());
+                        return CompletableFuture.completedFuture(null);
+                    }
+                    var recipient = found.getFound().getRecipient();
+                    return fragmentStarsService.initBuy(recipient, stars);
+                })
+                .thenCompose(initResponse -> {
+                    if (initResponse == null) return CompletableFuture.completedFuture(null);
+                    if (initResponse.getError() != null && initResponse.getReq_id() == null) {
+                        telegramService.sendMessageAuto(chatId, MessageFormat.format(errorMessageConfig.getFragmentError(), initResponse.getError()));
+                        return CompletableFuture.completedFuture(null);
+                    }
+                    return fragmentStarsService.createTransaction(initResponse.getReq_id());
+                })
+                .thenAccept(transaction -> {
+                    if (transaction == null) return;
+                    if (transaction.getError() != null) {
+                        telegramService.sendMessageAuto(chatId, MessageFormat.format(errorMessageConfig.getFragmentError(), transaction.getError()));
+                        return;
+                    }
+
+                    var balanceUser = userService.getBalance(userId);
+                    if (balanceUser.isEmpty() || balanceUser.get() < rubles) {
+                        telegramService.sendMessageAuto(chatId, clientMessageConfig.getRublesNotEnough());
+                        return;
+                    }
+                    transaction.getTransaction().getMessages().forEach(message -> {
+                        var response = tonService.send(message.getAddress(), message.getPayload(), message.getAmount());
+
+                        response.thenAccept((sendResponse) -> {
+                            var code = sendResponse.getCode();
+                            var sendResponseMessage = sendResponse.getMessage();
+
+                            if (code == 0) {
+                                telegramService.sendMessageAuto(chatId, MessageFormat.format(clientMessageConfig.getThanksForPayment(), stars, rubles));
+                                starsTransactionService.create(userId, -rubles, stars);
+                            } else {
+                                telegramService.sendMessageAuto(chatId, MessageFormat.format(errorMessageConfig.getTransactionNotCreated(), code, sendResponseMessage));
+                            }
+                            screenManager.updateScreen(chatId, screenFactory.createStartScreen(chatId, userId));
+                        });
+                    });
+
+                    isOther = false;
+                    username = "";
+                });
     }
 
     @Override

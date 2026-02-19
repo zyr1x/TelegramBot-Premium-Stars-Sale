@@ -116,7 +116,7 @@ public class SelectUserForBuyPremiumScreen extends AbstractScreen {
                     if (txResponse == null) return;
                     if (txResponse.getError() != null) {
                         telegramService.sendMessageAuto(chatId,
-                                MessageFormat.format(errorMessageConfig.getBuyPremiumMethodError(), txResponse.getError()));
+                                MessageFormat.format(errorMessageConfig.getFragmentError(), txResponse.getError()));
                         return;
                     }
 
