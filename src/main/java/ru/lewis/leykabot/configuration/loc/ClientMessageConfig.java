@@ -30,4 +30,11 @@ public class ClientMessageConfig {
     private String rublesNotEnough;
     private String referralLinkMessage;
     private String referralActivated;
+
+    // Premium
+    private String buyPremiumCommand;
+    private String selectUserForBuyPremiumCommand;
+    private String thanksForPremiumPayment;
+    private String selectYourselfPremium;
+    private String selectOtherPremium;
 }

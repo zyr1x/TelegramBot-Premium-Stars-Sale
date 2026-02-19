@@ -1,5 +1,18 @@
 localization:
   keyboard:
+    buy-premium:
+      "three-months":
+        months: 3
+        base-price: 299
+        name: "💎 3 месяца"
+      "six-months":
+        months: 6
+        base-price: 549
+        name: "💎 6 месяцев"
+      "twelve-months":
+        months: 12
+        base-price: 999
+        name: "💎 12 месяцев"
     buy-stars:
       "one-hundred":
         amount: 100
@@ -52,7 +65,10 @@ localization:
     go-channel: '👉 Перейти'
     referral-system: 'Реферальная система'
     referral-create-link: '🤖 Моя реферальная ссылка'
+    buy-premium: '💎 Купить Premium'
   error-message:
+    buy-premium-method-error: 'Не получилось создать платеж Premium (Возможно устарел API, обратитесь в ТП) Ответ от API {0}'
+    username-not-selected: 'Сначала выберите получателя!'
     transaction-not-created: 'Транзакция не создана, деньги не списаны. Код ошибки: {0}, сообщение {1} (Обратитесь к разработчикам)'
     buy-stars-method-error: 'Не получилось создать платеж (Возможно устарел API, обратитесь в ТП) Ответ от API {0}'
     fragment-error: 'Проблема на стороне Fragment (Возможно устарел API, обратитесь в ТП) Ответ от API {0}'
@@ -65,6 +81,8 @@ localization:
       max-value: 'Максимальное значение для зачисления 100.000 ₽'
       min-value: 'Минимальное значение для зачисления 10 ₽'
   log-message:
+    premium-transaction-create: 'Пользователь {0} ({1}) купил Premium на {2} месяцев для @{3}'
+    stars-transaction-create: 'Пользователь {0} ({1}) купил {2} звезд'
     referral-activated: 'Пользователь {0} активировал рефералку {1}, на его счету активированых рефералок {2}'
     balance-in-ton-not-enough: 'Сервис попытался создать транзацию на {0} нанотон (на кошельке {1} нанотон) но на кошельке не хватает денег для оплаты.'
     app-disable: |-
@@ -76,8 +94,19 @@ localization:
     create-code: |-
       Был создан новый промокод: {0}
     app-enable: |-
-      Приложение запущено, работает в сштатном режиме.
+      Приложение запущено ✅
+      📦 Коммит: {0}
+      💬 {1}
+      👤 {2}
   client-message:
+    buy-premium-command: |-
+      💎 Выберите срок подписки Telegram Premium
+    select-user-for-buy-premium-command: |-
+      Выберите пользователя которому покупаете Premium. (Себя или кого-то другого)
+      Срок: {0} мес., Оплатите: {1} ₽
+    thanks-for-premium-payment: |-
+      Спасибо за покупку Telegram Premium!
+      Срок: {0} мес., Потрачено рублей: {1}
     referral-activated: 'Вы активировали рефералку пользователя!'
     referral-link-message: 'Ваша реферальная ссылка: {0}'
     create-referral-command: |-
@@ -118,11 +147,13 @@ localization:
       🤖 Бот для покупки звезд: <i>@leykastars_bot</i>
       🤙 ТГК с розыгрышами и полезной информацией: <i>@leykastars</i>
     profile-command: |-
-      ✨ <b>Ваш профиль</b>: {3}
+      ✨ <b>Ваш профиль</b>: {5}
       
       💸 Баланс: {0}
       ⚡️ Транзакций за все время: {1}
-      ❄️ Куплено всего звезд за все время: {2}
+      ₽ Пополнено рублей за все время: {2}
+      ❄️ Куплено всего звезд за все время: {3}
+      👑 Премиум куплено за все время на {4} месяца
     start-command: |-
       Добро пожаловать в <b>официальный магазин</b> звезд Telegram!
 

@@ -7,7 +7,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: create-drop
     show-sql: true
     properties:
       hibernate:
@@ -18,3 +18,4 @@ spring:
     import:
       - classpath:config.yml
       - classpath:localization.yml
+      - optional:classpath:git.properties

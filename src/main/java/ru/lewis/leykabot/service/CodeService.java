@@ -21,6 +21,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 @RequiredArgsConstructor
@@ -54,6 +55,13 @@ public class CodeService {
     // -------------------------------------------------------------------------
     // Прогрев / инвалидация
     // -------------------------------------------------------------------------
+
+    public CompletableFuture<Void> warmUpAll(Long telegramId) {
+        return CompletableFuture.allOf(
+                CompletableFuture.runAsync(() -> warmUpUserCodes(telegramId)),
+                CompletableFuture.runAsync(this::warmUpAllCodes)
+        );
+    }
 
     /** Подгружает активированные коды пользователя в кэш. Если уже есть — из кэша. */
     public List<ActivatedCode> warmUpUserCodes(Long telegramId) {

@@ -15,6 +15,7 @@ import ru.lewis.leykabot.model.screen.ui.ScreenFactory;
 import ru.lewis.leykabot.model.screen.ui.ScreenManager;
 
 import java.text.MessageFormat;
+import java.util.concurrent.CompletableFuture;
 
 @Component
 @AllArgsConstructor
@@ -33,6 +34,8 @@ public class TelegramBot implements LongPollingSingleThreadUpdateConsumer {
     private final TransactionService transactionService;
     private final CodeService codeService;
     private final LogMessageConfig logMessageConfig;
+    private final StarsTransactionService starsTransactionService;
+    private final PremiumTransactionService premiumTransactionService;
 
     @Override
     public void consume(Update update) {
@@ -106,13 +109,15 @@ public class TelegramBot implements LongPollingSingleThreadUpdateConsumer {
                 userService.createUser(userId);
             }
 
-            // load user cache & create start screen...
-            screenManager.createScreen(chatId, screenFactory.createStartScreen(chatId, userId));
-            userService.warmUp(userId);
-            userService.warmUpReferrals(userId);
-            userService.warmUpActivatedReferrals(userId);
-            transactionService.warmUp(userId);
-            codeService.warmUpUserCodes(userId);
+            CompletableFuture.allOf(
+                    premiumTransactionService.preload(userId),
+                    starsTransactionService.preload(userId),
+                    userService.warmUpAll(userId),
+                    transactionService.preload(userId),
+                    codeService.warmUpAll(userId)
+            ).thenRun(() ->
+                    screenManager.createScreen(chatId, screenFactory.createStartScreen(chatId, userId))
+            );
         }
     }
 }

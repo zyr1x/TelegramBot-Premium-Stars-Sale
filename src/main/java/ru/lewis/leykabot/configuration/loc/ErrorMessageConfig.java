@@ -18,6 +18,10 @@ public class ErrorMessageConfig {
     private Rubles rubles;
     private Stars stars;
 
+    // --- Premium ---
+    private String buyPremiumMethodError;
+    private String usernameNotSelected;
+
     @Getter
     @Setter
     public static class Stars {

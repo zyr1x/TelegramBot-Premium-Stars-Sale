@@ -6,11 +6,14 @@ import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.longpolling.TelegramBotsLongPollingApplication;
+import ru.lewis.leykabot.configuration.GitCommitConfig;
 import ru.lewis.leykabot.configuration.TelegramBotConfig;
 import ru.lewis.leykabot.configuration.TelegramConfig;
 import ru.lewis.leykabot.configuration.loc.LogMessageConfig;
 import ru.lewis.leykabot.service.CodeService;
 import ru.lewis.leykabot.service.TelegramService;
+
+import java.text.MessageFormat;
 
 @Component
 @Slf4j
@@ -22,6 +25,7 @@ public class BotInitializer {
     private final LogMessageConfig logMessageConfig;
     private final TelegramConfig telegramConfig;
     private final CodeService codeService;
+    private final GitCommitConfig gitCommitConfig;
 
     @EventListener({ContextRefreshedEvent.class})
     public void init() {
@@ -30,7 +34,19 @@ public class BotInitializer {
             botsApplication.registerBot(config.getToken(), telegramBot);
             codeService.warmUpAllCodes();
 
-            telegramService.sendMessageToTopic(telegramConfig.getLogChannelId(), telegramConfig.getLogChannelTopicId(), logMessageConfig.getAppEnable());
+            String deployMessage = MessageFormat.format(
+                    logMessageConfig.getAppEnable(),
+                    gitCommitConfig.getHash(),
+                    gitCommitConfig.getMessage(),
+                    gitCommitConfig.getAuthor()
+            );
+
+            telegramService.sendMessageToTopic(
+                    telegramConfig.getLogChannelId(),
+                    telegramConfig.getLogChannelTopicId(),
+                    deployMessage
+            );
+
         } catch (Exception e) {
             e.printStackTrace();
         }

@@ -14,20 +14,13 @@ public interface TransactionRepository extends JpaRepository<Transaction, Intege
 
     List<Transaction> findByTelegramIdOrderByCreatedAtDesc(Long telegramId);
 
-    List<Transaction> findByTelegramId(Long telegramId);
+    @Query("SELECT COALESCE(SUM(t.amountRubles), 0) FROM Transaction t WHERE t.telegramId = :telegramId")
+    long sumRublesByTelegramId(@Param("telegramId") Long telegramId);
 
-    @Query("SELECT t FROM Transaction t WHERE t.telegramId = :telegramId " +
-            "AND t.createdAt BETWEEN :startDate AND :endDate " +
-            "ORDER BY t.createdAt DESC")
-    List<Transaction> findByTelegramIdAndDateRange(
+    @Query("SELECT COUNT(t) FROM Transaction t WHERE t.telegramId = :telegramId " +
+            "AND t.createdAt BETWEEN :from AND :to")
+    long countByTelegramIdAndDateRange(
             @Param("telegramId") Long telegramId,
-            @Param("startDate") LocalDateTime startDate,
-            @Param("endDate") LocalDateTime endDate
-    );
-
-    @Query("SELECT SUM(t.amountStars) FROM Transaction t WHERE t.telegramId = :telegramId")
-    Long getTotalStarsByTelegramId(@Param("telegramId") Long telegramId);
-
-    @Query("SELECT COUNT(t) FROM Transaction t WHERE t.telegramId = :telegramId")
-    Long countByTelegramId(@Param("telegramId") Long telegramId);
+            @Param("from") LocalDateTime from,
+            @Param("to") LocalDateTime to);
 }

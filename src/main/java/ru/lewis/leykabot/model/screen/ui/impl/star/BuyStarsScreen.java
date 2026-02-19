@@ -1,4 +1,4 @@
-package ru.lewis.leykabot.model.screen.ui.impl;
+package ru.lewis.leykabot.model.screen.ui.impl.star;
 
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;

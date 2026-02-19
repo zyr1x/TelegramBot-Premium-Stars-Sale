@@ -1,4 +1,4 @@
-package ru.lewis.leykabot.model.dto.fragment;
+package ru.lewis.leykabot.model.dto.fragment.star;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;

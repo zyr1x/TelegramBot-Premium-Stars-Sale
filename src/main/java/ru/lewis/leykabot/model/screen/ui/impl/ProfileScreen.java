@@ -9,9 +9,7 @@ import ru.lewis.leykabot.configuration.loc.ClientMessageConfig;
 import ru.lewis.leykabot.model.screen.ui.AbstractScreen;
 import ru.lewis.leykabot.model.screen.ui.ScreenFactory;
 import ru.lewis.leykabot.model.screen.ui.ScreenManager;
-import ru.lewis.leykabot.service.TelegramService;
-import ru.lewis.leykabot.service.TransactionService;
-import ru.lewis.leykabot.service.UserService;
+import ru.lewis.leykabot.service.*;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -25,6 +23,8 @@ public class ProfileScreen extends AbstractScreen {
     private final TelegramService telegramService;
     private final UserService userService;
     private final TransactionService transactionService;
+    private final StarsTransactionService starsTransactionService;
+    private final PremiumTransactionService premiumTransactionService;
 
     public ProfileScreen(Long chatId, Long userId, ButtonsLocConfig buttonsLocConfig,
                          ClientMessageConfig clientMessageConfig,
@@ -32,6 +32,8 @@ public class ProfileScreen extends AbstractScreen {
                          TelegramService telegramService,
                          UserService userService,
                          TransactionService transactionService,
+                         StarsTransactionService starsTransactionService,
+                         PremiumTransactionService premiumTransactionService,
                          ScreenFactory screenFactory) {
         super(chatId, userId);
         this.buttonsLocConfig = buttonsLocConfig;
@@ -40,6 +42,8 @@ public class ProfileScreen extends AbstractScreen {
         this.telegramService = telegramService;
         this.userService = userService;
         this.transactionService = transactionService;
+        this.starsTransactionService = starsTransactionService;
+        this.premiumTransactionService = premiumTransactionService;
         this.screenFactory = screenFactory;
     }
 
@@ -88,8 +92,10 @@ public class ProfileScreen extends AbstractScreen {
     public String getText() {
         return MessageFormat.format(clientMessageConfig.getProfileCommand(),
                 userService.getBalance(userId).orElse(0),
-                transactionService.getTransactionCount(userId),
-                transactionService.getAllTimeStats(userId).getAverageStarsPerTransaction(),
+                transactionService.getCount(userId),
+                transactionService.getAllTimeStats(userId).totalRubles(),
+                starsTransactionService.getAllTimeStats(userId).totalStars(),
+                premiumTransactionService.getAllTimeStats(userId).totalMonths(),
                 telegramService.getUsernameByUserId(userId));
     }
 }

@@ -18,6 +18,12 @@ jobs:
           script: |
             cd /home/tg/LeykaShopBot
             git pull origin main
+            
+            # Записываем инфо о коммите в файл
+            echo "app.commit.hash=$(git rev-parse --short HEAD)" > src/main/resources/git.properties
+            echo "app.commit.message=$(git log -1 --pretty=%s)" >> src/main/resources/git.properties
+            echo "app.commit.author=$(git log -1 --pretty=%an)" >> src/main/resources/git.properties
+            
             docker-compose stop leykabot
             docker-compose rm -f leykabot
             docker-compose up -d --build leykabot

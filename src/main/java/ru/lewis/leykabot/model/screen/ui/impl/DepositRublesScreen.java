@@ -77,7 +77,7 @@ public class DepositRublesScreen extends AbstractScreen {
             telegramService.sendMessageAuto(chatId, clientMessageConfig.getDepositEnterSum());
             return;
         }
-        transactionService.createPurchaseTransaction(userId, deposit.getAmount(), 0);
+        transactionService.create(userId, deposit.getAmount());
         telegramService.sendMessageAuto(chatId, clientMessageConfig.getSuccessfullyCreatedTransaction());
     }
 
@@ -95,7 +95,7 @@ public class DepositRublesScreen extends AbstractScreen {
                 telegramService.sendMessageAuto(chatId, errorMessageConfig.getRubles().getMinValue());
                 return;
             }
-            transactionService.createPurchaseTransaction(userId, number, 0);
+            transactionService.create(userId, number);
             telegramService.sendMessageAuto(chatId, clientMessageConfig.getSuccessfullyCreatedTransaction());
             isExpectationMessage = false;
         } catch (NumberFormatException exception) {

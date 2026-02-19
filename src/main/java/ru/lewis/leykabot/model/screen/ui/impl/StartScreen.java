@@ -64,6 +64,10 @@ public class StartScreen extends AbstractScreen {
                 screenManager.updateScreen(chatId, screenFactory.createBuyStarsScreen(chatId, userId));
                 break;
             }
+            case "buy-premium": {
+                screenManager.updateScreen(chatId, screenFactory.createBuyPremiumScreen(chatId, userId));
+                break;
+            }
             case "referral": {
                 screenManager.updateScreen(chatId, screenFactory.createReferralScreen(chatId, userId));
                 break;
@@ -88,6 +92,12 @@ public class StartScreen extends AbstractScreen {
                 .callbackData("buy-stars")
                 .build();
         row1.add(buyStarsButton);
+
+        InlineKeyboardButton buyPremiumButton = InlineKeyboardButton.builder()
+                .text(buttonsLocConfig.getBuyPremium())
+                .callbackData("buy-premium")
+                .build();
+        row1.add(buyPremiumButton);
 
         InlineKeyboardRow row2 = new InlineKeyboardRow();
         InlineKeyboardButton profileButton = InlineKeyboardButton.builder()

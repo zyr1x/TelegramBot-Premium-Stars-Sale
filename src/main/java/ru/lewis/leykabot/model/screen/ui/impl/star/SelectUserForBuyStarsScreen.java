@@ -1,11 +1,9 @@
-package ru.lewis.leykabot.model.screen.ui.impl;
+package ru.lewis.leykabot.model.screen.ui.impl.star;
 
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardRow;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
-import org.ton.ton4j.smartcontract.SendResponse;
-import ru.lewis.leykabot.configuration.TonConfig;
 import ru.lewis.leykabot.configuration.loc.ButtonsLocConfig;
 import ru.lewis.leykabot.configuration.loc.ClientMessageConfig;
 import ru.lewis.leykabot.configuration.loc.ErrorMessageConfig;
@@ -26,9 +24,9 @@ public class SelectUserForBuyStarsScreen extends AbstractScreen {
     private final TelegramService telegramService;
     private final FragmentStarsService fragmentStarsService;
     private final ErrorMessageConfig errorMessageConfig;
-    private final TransactionService transactionService;
     private final UserService userService;
     private final TonService tonService;
+    private final StarsTransactionService starsTransactionService;
     private final ScreenManager screenManager;
     private final ScreenFactory screenFactory;
 
@@ -41,9 +39,9 @@ public class SelectUserForBuyStarsScreen extends AbstractScreen {
                                        TelegramService telegramService,
                                        FragmentStarsService fragmentStarsService,
                                        ErrorMessageConfig errorMessageConfig,
-                                       TransactionService transactionService,
                                        UserService userService,
                                        TonService tonService,
+                                       StarsTransactionService starsTransactionService,
                                        ScreenManager screenManager,
                                        ScreenFactory screenFactory) {
         super(chatId, userId);
@@ -54,9 +52,9 @@ public class SelectUserForBuyStarsScreen extends AbstractScreen {
         this.telegramService = telegramService;
         this.fragmentStarsService = fragmentStarsService;
         this.errorMessageConfig = errorMessageConfig;
-        this.transactionService = transactionService;
         this.userService = userService;
         this.tonService = tonService;
+        this.starsTransactionService = starsTransactionService;
         this.screenManager = screenManager;
         this.screenFactory = screenFactory;
     }
@@ -113,7 +111,7 @@ public class SelectUserForBuyStarsScreen extends AbstractScreen {
 
                                     if (code == 0) {
                                         telegramService.sendMessageAuto(chatId, MessageFormat.format(clientMessageConfig.getThanksForPayment(), stars, rubles));
-                                        transactionService.createPurchaseTransaction(userId, -rubles, stars);
+                                        starsTransactionService.create(userId, -rubles, stars);
                                     } else {
                                         telegramService.sendMessageAuto(chatId, MessageFormat.format(errorMessageConfig.getTransactionNotCreated(), code, sendResponseMessage));
                                     }
@@ -137,11 +135,11 @@ public class SelectUserForBuyStarsScreen extends AbstractScreen {
 
     @Override
     public void handleMessage(String text, TelegramClient bot) {
-        if (isOther) {
-            username = text;
-            isOther = false;
-            telegramService.sendMessageAuto(chatId, MessageFormat.format(clientMessageConfig.getIntroducedUsername(), text));
-        }
+        if (!isOther) return;
+        username = text.startsWith("@") ? text.substring(1) : text;
+        isOther  = false;
+        telegramService.sendMessageAuto(chatId,
+                MessageFormat.format(clientMessageConfig.getIntroducedUsername(), username));
     }
 
     @Override

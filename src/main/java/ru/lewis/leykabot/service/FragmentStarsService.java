@@ -13,7 +13,7 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import ru.lewis.leykabot.configuration.FragmentConfig;
 import ru.lewis.leykabot.model.dto.fragment.InitResponse;
-import ru.lewis.leykabot.model.dto.fragment.StarsSearchResponse;
+import ru.lewis.leykabot.model.dto.fragment.star.StarsSearchResponse;
 import ru.lewis.leykabot.model.dto.fragment.TransactionResponse;
 
 import java.util.concurrent.CompletableFuture;
