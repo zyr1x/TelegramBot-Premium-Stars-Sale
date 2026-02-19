@@ -7,7 +7,7 @@ localization:
         name: "💎 3 месяца"
       "six-months":
         months: 6
-        base-price: 549
+        base-price: 1549
         name: "💎 6 месяцев"
       "twelve-months":
         months: 12
