@@ -28,6 +28,7 @@ public class PlategaWebhookController {
             @RequestHeader("X-Secret") String secret,
             @RequestBody Map<String, Object> body) {
         try {
+            System.out.println("Webhook body: " + body);
             PaymentStatus status = PaymentStatus.valueOf((String) body.get("status"));
             String transactionId = (String) body.get("transactionId");
 
