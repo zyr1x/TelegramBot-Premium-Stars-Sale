@@ -168,6 +168,20 @@ public class PlategaService {
         });
     }
 
+    public void deleteTransaction(String transactionId) {
+        paymentRepository.deleteById(transactionId);
+
+        paymentResponseCache.invalidate(transactionId);
+        amountResponseCache.invalidate(transactionId);
+
+        userTransactionsCache.asMap().forEach((userId, transactions) -> {
+            transactions.remove(transactionId);
+            if (transactions.isEmpty()) {
+                userTransactionsCache.invalidate(userId);
+            }
+        });
+    }
+
     public CompletableFuture<PaymentStatus> checkStatus(String transactionId) {
         return CompletableFuture.supplyAsync(() -> {
             var userId = getUserIdByTransactionId(transactionId);
