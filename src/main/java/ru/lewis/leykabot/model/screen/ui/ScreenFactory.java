@@ -3,9 +3,8 @@ package ru.lewis.leykabot.model.screen.ui;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 import ru.lewis.leykabot.configuration.DevModeConfig;
+import ru.lewis.leykabot.configuration.MarkupConfig;
 import ru.lewis.leykabot.configuration.TopFormat;
-import ru.lewis.leykabot.configuration.prem.PremiumConfig;
-import ru.lewis.leykabot.configuration.star.StarsConfig;
 import ru.lewis.leykabot.configuration.telegram.TelegramConfig;
 import ru.lewis.leykabot.configuration.loc.ButtonsLocConfig;
 import ru.lewis.leykabot.configuration.loc.ClientMessageConfig;
@@ -38,11 +37,10 @@ public class ScreenFactory {
     private final ErrorMessageConfig errorMessageConfig;
     private final DevModeConfig devModeConfig;
     private final FragmentStarsService fragmentStarsService;
-    private final StarsConfig starsConfig;
     private final TonService tonService;
     private final StarsTransactionService starsTransactionService;
     private final PremiumTransactionService premiumTransactionService;
-    private final PremiumConfig premiumConfig;
+    private final MarkupConfig markupConfig;
     private final FragmentPremiumService fragmentPremiumService;
     private final TopService topService;
     private final TopFormat topFormat;
@@ -74,7 +72,7 @@ public class ScreenFactory {
     public StarBuyScreen createBuyStarsScreen(Long chatId, Long userId) {
         return new StarBuyScreen(chatId, userId,
                 buttonsLocConfig, keyboardLocConfig, clientMessageConfig, transactionService,
-                errorMessageConfig, telegramService, devModeConfig, starsConfig, screenManager, this);
+                errorMessageConfig, telegramService, devModeConfig, markupConfig, plategaService, screenManager, this);
     }
 
     public UserSelectStarsScreen createSelectUserForBuyStarsScreen(Long chatId, Long userId, int stars, int rubles) {
@@ -93,7 +91,7 @@ public class ScreenFactory {
 
     public PremiumBuyScreen createBuyPremiumScreen(Long chatId, Long userId) {
         return new PremiumBuyScreen(chatId, userId, buttonsLocConfig, keyboardLocConfig, clientMessageConfig, telegramService,
-                devModeConfig, premiumConfig, screenManager, this);
+                devModeConfig, markupConfig, plategaService, screenManager, this);
     }
 
     public UserSelectPremiumScreen createSelectUserForBuyPremiumScreen(Long chatId, Long userId, int months, int rubles) {

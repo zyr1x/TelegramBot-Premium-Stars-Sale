@@ -7,15 +7,12 @@ localization:
     buy-premium:
       "three-months":
         months: 3
-        base-price: 299
         name: "💎 3 месяца"
       "six-months":
         months: 6
-        base-price: 1549
         name: "💎 6 месяцев"
       "twelve-months":
         months: 12
-        base-price: 1999
         name: "💎 12 месяцев"
     buy-stars:
       "one-hundred":

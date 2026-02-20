@@ -13,21 +13,14 @@ import java.util.Map;
 @Getter
 @Setter
 public class KeyboardLocConfig {
-    private Map<String, Deposit> depositRubles;
-    private Map<String, BuyStars> buyStars;
+    private Map<String, Section> depositRubles;
+    private Map<String, Section> buyStars;
     private Map<String, BuyPremium> buyPremium;
     private PaymentMethods paymentMethods;
 
     @Getter
     @Setter
-    public static class Deposit {
-        private int amount;
-        private String name;
-    }
-
-    @Getter
-    @Setter
-    public static class BuyStars {
+    public static class Section {
         private int amount;
         private String name;
     }
@@ -36,7 +29,6 @@ public class KeyboardLocConfig {
     public static class BuyPremium {
         private String name;
         private int months;
-        private int basePrice;
     }
 
     @Data

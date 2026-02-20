@@ -69,7 +69,7 @@ public class RublesDepositSelectPaymentMethodScreen extends AbstractScreen {
 
         switch (callback) {
             case "sbpqr" -> paymentMethod = PaymentMethod.SBPQR;
-            case "card" -> paymentMethod = PaymentMethod.CARD;
+            case "card" -> paymentMethod = PaymentMethod.CARD_ACQUIRING;
             case "crypto" -> paymentMethod = PaymentMethod.CRYPTO;
         }
 

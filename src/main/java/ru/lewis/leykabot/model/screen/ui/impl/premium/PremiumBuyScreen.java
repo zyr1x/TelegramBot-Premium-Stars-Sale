@@ -5,13 +5,14 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKe
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardRow;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 import ru.lewis.leykabot.configuration.DevModeConfig;
-import ru.lewis.leykabot.configuration.prem.PremiumConfig;
+import ru.lewis.leykabot.configuration.MarkupConfig;
 import ru.lewis.leykabot.configuration.loc.ButtonsLocConfig;
 import ru.lewis.leykabot.configuration.loc.ClientMessageConfig;
 import ru.lewis.leykabot.configuration.loc.KeyboardLocConfig;
 import ru.lewis.leykabot.model.screen.ui.AbstractScreen;
 import ru.lewis.leykabot.model.screen.ui.ScreenFactory;
 import ru.lewis.leykabot.model.screen.ui.ScreenManager;
+import ru.lewis.leykabot.service.PlategaService;
 import ru.lewis.leykabot.service.TelegramService;
 
 import java.util.ArrayList;
@@ -25,7 +26,8 @@ public class PremiumBuyScreen extends AbstractScreen {
     private final ClientMessageConfig clientMessageConfig;
     private final TelegramService     telegramService;
     private final DevModeConfig       devModeConfig;
-    private final PremiumConfig       premiumConfig;
+    private final MarkupConfig        markupConfig;
+    private final PlategaService      plategaService;
     private final ScreenManager       screenManager;
     private final ScreenFactory       screenFactory;
 
@@ -35,18 +37,20 @@ public class PremiumBuyScreen extends AbstractScreen {
                             ClientMessageConfig clientMessageConfig,
                             TelegramService telegramService,
                             DevModeConfig devModeConfig,
-                            PremiumConfig premiumConfig,
+                            MarkupConfig markupConfig,
+                            PlategaService plategaService,
                             ScreenManager screenManager,
                             ScreenFactory screenFactory) {
         super(chatId, userId);
-        this.buttonsLocConfig    = buttonsLocConfig;
-        this.keyboardLocConfig   = keyboardLocConfig;
+        this.buttonsLocConfig = buttonsLocConfig;
+        this.keyboardLocConfig = keyboardLocConfig;
         this.clientMessageConfig = clientMessageConfig;
-        this.telegramService     = telegramService;
-        this.devModeConfig       = devModeConfig;
-        this.premiumConfig       = premiumConfig;
-        this.screenManager       = screenManager;
-        this.screenFactory       = screenFactory;
+        this.telegramService = telegramService;
+        this.devModeConfig = devModeConfig;
+        this.markupConfig = markupConfig;
+        this.plategaService = plategaService;
+        this.screenManager = screenManager;
+        this.screenFactory = screenFactory;
     }
 
     @Override
@@ -66,16 +70,15 @@ public class PremiumBuyScreen extends AbstractScreen {
         var buyPremium = premiumButtons.get(callback);
         if (buyPremium == null) return;
 
-        int months      = buyPremium.getMonths();
-        int rubles      = (int) Math.ceil(buyPremium.getBasePrice() * premiumConfig.getMarkup());
+        plategaService.getRateRubInUSDT().thenAccept(rateResponse -> {
+            var rate = rateResponse.getRate();
 
-        screenManager.updateScreen(chatId,
-                screenFactory.createSelectUserForBuyPremiumScreen(chatId, userId, months, rubles));
-    }
+            int months = buyPremium.getMonths();
+            int rubles = (int) Math.ceil(markupConfig.getPremium() * months * rate * markupConfig.getPlatega() * markupConfig.getProfit());
 
-    @Override
-    public void handleMessage(String text, TelegramClient bot) {
-        // Выбор срока — только через кнопки, ввод текста не нужен
+            screenManager.updateScreen(chatId,
+                    screenFactory.createSelectUserForBuyPremiumScreen(chatId, userId, months, rubles));
+        });
     }
 
     @Override

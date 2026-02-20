@@ -5,7 +5,7 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKe
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardRow;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 import ru.lewis.leykabot.configuration.DevModeConfig;
-import ru.lewis.leykabot.configuration.star.StarsConfig;
+import ru.lewis.leykabot.configuration.MarkupConfig;
 import ru.lewis.leykabot.configuration.loc.ButtonsLocConfig;
 import ru.lewis.leykabot.configuration.loc.ClientMessageConfig;
 import ru.lewis.leykabot.configuration.loc.ErrorMessageConfig;
@@ -13,6 +13,7 @@ import ru.lewis.leykabot.configuration.loc.KeyboardLocConfig;
 import ru.lewis.leykabot.model.screen.ui.AbstractScreen;
 import ru.lewis.leykabot.model.screen.ui.ScreenFactory;
 import ru.lewis.leykabot.model.screen.ui.ScreenManager;
+import ru.lewis.leykabot.service.PlategaService;
 import ru.lewis.leykabot.service.TelegramService;
 import ru.lewis.leykabot.service.TransactionService;
 
@@ -28,7 +29,8 @@ public class StarBuyScreen extends AbstractScreen {
     private final ErrorMessageConfig errorMessageConfig;
     private final TelegramService telegramService;
     private final DevModeConfig devModeConfig;
-    private final StarsConfig starsConfig;
+    private final MarkupConfig markupConfig;
+    private final PlategaService plategaService;
     private final ScreenManager screenManager;
     private final ScreenFactory screenFactory;
 
@@ -41,7 +43,8 @@ public class StarBuyScreen extends AbstractScreen {
                          ErrorMessageConfig errorMessageConfig,
                          TelegramService telegramService,
                          DevModeConfig devModeConfig,
-                         StarsConfig starsConfig,
+                         MarkupConfig markupConfig,
+                         PlategaService plategaService,
                          ScreenManager screenManager,
                          ScreenFactory screenFactory) {
         super(chatId, userId);
@@ -52,7 +55,8 @@ public class StarBuyScreen extends AbstractScreen {
         this.errorMessageConfig = errorMessageConfig;
         this.telegramService = telegramService;
         this.devModeConfig = devModeConfig;
-        this.starsConfig = starsConfig;
+        this.markupConfig = markupConfig;
+        this.plategaService = plategaService;
         this.screenManager = screenManager;
         this.screenFactory = screenFactory;
     }
@@ -71,7 +75,7 @@ public class StarBuyScreen extends AbstractScreen {
             telegramService.sendMessageAuto(chatId, clientMessageConfig.getDevelopmentMode());
             return;
         }
-        Map<String, KeyboardLocConfig.BuyStars> starButtons = keyboardLocConfig.getBuyStars();
+        Map<String, KeyboardLocConfig.Section> starButtons = keyboardLocConfig.getBuyStars();
         var buyStar = starButtons.get(callback);
 
         if (buyStar == null) return;
@@ -80,8 +84,7 @@ public class StarBuyScreen extends AbstractScreen {
             telegramService.sendMessageAuto(chatId, clientMessageConfig.getStarBuyEnterSum());
             return;
         }
-        int rublesMarkup = (int) Math.ceil(buyStar.getAmount() * starsConfig.getMarkup());
-        screenManager.updateScreen(chatId, screenFactory.createSelectUserForBuyStarsScreen(chatId, userId, buyStar.getAmount(), rublesMarkup));
+        handleBuy(buyStar.getAmount());
     }
 
     @Override
@@ -98,14 +101,21 @@ public class StarBuyScreen extends AbstractScreen {
                 telegramService.sendMessageAuto(chatId, errorMessageConfig.getStars().getMinValue());
                 return;
             }
-
-            int rublesMarkup = (int) Math.ceil(number * starsConfig.getMarkup());
-            screenManager.updateScreen(chatId, screenFactory.createSelectUserForBuyStarsScreen(chatId, userId, number, rublesMarkup));
+            handleBuy(number);
 
             isExpectationMessage = false;
         } catch (NumberFormatException exception) {
             telegramService.sendMessageAuto(chatId, errorMessageConfig.getNumberFormat());
         }
+    }
+
+    private void handleBuy(int stars) {
+        plategaService.getRateRubInUSDT().thenAccept(rateResponse -> {
+            var rate = rateResponse.getRate();
+
+            var rubles = (int) Math.ceil(stars * rate * markupConfig.getStar() * markupConfig.getPlatega() * markupConfig.getProfit());
+            screenManager.updateScreen(chatId, screenFactory.createSelectUserForBuyStarsScreen(chatId, userId, stars, rubles));
+        });
     }
 
     @Override
@@ -117,12 +127,12 @@ public class StarBuyScreen extends AbstractScreen {
     protected InlineKeyboardMarkup getKeyboard() {
         List<InlineKeyboardRow> keyboard = new ArrayList<>();
 
-        Map<String, KeyboardLocConfig.BuyStars> starsButtons = keyboardLocConfig.getBuyStars();
+        Map<String, KeyboardLocConfig.Section> starsButtons = keyboardLocConfig.getBuyStars();
 
         InlineKeyboardRow currentRow = new InlineKeyboardRow();
         int count = 0;
 
-        for (Map.Entry<String, KeyboardLocConfig.BuyStars> entry : starsButtons.entrySet()) {
+        for (Map.Entry<String, KeyboardLocConfig.Section> entry : starsButtons.entrySet()) {
             InlineKeyboardButton button = InlineKeyboardButton.builder()
                     .text(entry.getValue().getName())
                     .callbackData(entry.getKey())

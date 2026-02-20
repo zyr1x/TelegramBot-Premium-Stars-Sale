@@ -68,7 +68,7 @@ public class RublesDepositScreen extends AbstractScreen {
             telegramService.sendMessageAuto(chatId, clientMessageConfig.getDevelopmentMode());
             return;
         }
-        Map<String, KeyboardLocConfig.Deposit> depositButtons = keyboardLocConfig.getDepositRubles();
+        Map<String, KeyboardLocConfig.Section> depositButtons = keyboardLocConfig.getDepositRubles();
         var deposit = depositButtons.get(callback);
 
         if (deposit == null) return;
@@ -115,12 +115,12 @@ public class RublesDepositScreen extends AbstractScreen {
     protected InlineKeyboardMarkup getKeyboard() {
         List<InlineKeyboardRow> keyboard = new ArrayList<>();
 
-        Map<String, KeyboardLocConfig.Deposit> depositButtons = keyboardLocConfig.getDepositRubles();
+        Map<String, KeyboardLocConfig.Section> depositButtons = keyboardLocConfig.getDepositRubles();
 
         InlineKeyboardRow currentRow = new InlineKeyboardRow();
         int count = 0;
 
-        for (Map.Entry<String, KeyboardLocConfig.Deposit> entry : depositButtons.entrySet()) {
+        for (Map.Entry<String, KeyboardLocConfig.Section> entry : depositButtons.entrySet()) {
             InlineKeyboardButton button = InlineKeyboardButton.builder()
                     .text(entry.getValue().getName())
                     .callbackData(entry.getKey())

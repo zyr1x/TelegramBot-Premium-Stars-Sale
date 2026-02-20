@@ -3,19 +3,14 @@ package ru.lewis.leykabot.service;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 import ru.lewis.leykabot.configuration.PlategaConfig;
 import ru.lewis.leykabot.configuration.telegram.TelegramConfig;
 import ru.lewis.leykabot.model.database.entity.PaymentEntity;
-import ru.lewis.leykabot.model.dto.platega.PaymentMethod;
-import ru.lewis.leykabot.model.dto.platega.PaymentCreateResponse;
-import ru.lewis.leykabot.model.dto.platega.PaymentGetStatusResponse;
-import ru.lewis.leykabot.model.dto.platega.PaymentStatus;
+import ru.lewis.leykabot.model.dto.platega.*;
 import ru.lewis.leykabot.repository.PaymentRepository;
 
 import java.text.MessageFormat;
@@ -33,6 +28,7 @@ public class PlategaService {
     private final static String API_URL = "https://app.platega.io/";
     private final static String API_URL_TRANSACTION = API_URL + "transaction/";
     private final static String API_URL_PAYMENT = API_URL_TRANSACTION + "process/";
+    private final static String API_URL_RATES = API_URL + "rates/payment_method_rate";
     private final RestTemplate restTemplate = new RestTemplate();
 
     // кэш: userId -> список transactionId
@@ -101,6 +97,24 @@ public class PlategaService {
     }
 
     // ─── методы ───────────────────────────────────────────────────────────────
+
+    public CompletableFuture<RatePaymentResponse> getRateRubInUSDT() {
+        return CompletableFuture.supplyAsync(() -> {
+            String url = UriComponentsBuilder.fromUriString(API_URL_RATES)
+                    .queryParam("merchantId", plategaConfig.getMerchantId())
+                    .queryParam("paymentMethod", PaymentMethod.SBPQR.getId())
+                    .queryParam("currencyFrom", "USDT")
+                    .queryParam("currencyTo", "RUB")
+                    .toUriString();
+
+            HttpEntity<Void> entity = new HttpEntity<>(buildHeaders());
+
+            ResponseEntity<RatePaymentResponse> response =
+                    restTemplate.exchange(url, HttpMethod.GET, entity, RatePaymentResponse.class);
+
+            return response.getBody();
+        });
+    }
 
     public CompletableFuture<PaymentCreateResponse> createPayment(PaymentMethod paymentMethod, int amountRubles, Long telegramUserId) {
         return CompletableFuture.supplyAsync(() -> {
