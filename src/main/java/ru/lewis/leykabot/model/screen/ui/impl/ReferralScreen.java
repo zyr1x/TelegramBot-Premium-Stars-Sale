@@ -48,7 +48,7 @@ public class ReferralScreen extends AbstractScreen {
                 var link = "";
 
                 if (!referralLinks.isEmpty()) {
-                    var referralLink = referralLinks.get(0);
+                    var referralLink = referralLinks.getFirst();
                     link = userService.hashToLink(referralLink.getHash());
                 } else {
                     link = userService.createReferralLink(userId);
