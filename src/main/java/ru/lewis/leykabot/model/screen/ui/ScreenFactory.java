@@ -3,6 +3,7 @@ package ru.lewis.leykabot.model.screen.ui;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 import ru.lewis.leykabot.configuration.DevModeConfig;
+import ru.lewis.leykabot.configuration.TopFormat;
 import ru.lewis.leykabot.configuration.prem.PremiumConfig;
 import ru.lewis.leykabot.configuration.star.StarsConfig;
 import ru.lewis.leykabot.configuration.telegram.TelegramConfig;
@@ -10,11 +11,14 @@ import ru.lewis.leykabot.configuration.loc.ButtonsLocConfig;
 import ru.lewis.leykabot.configuration.loc.ClientMessageConfig;
 import ru.lewis.leykabot.configuration.loc.ErrorMessageConfig;
 import ru.lewis.leykabot.configuration.loc.KeyboardLocConfig;
+import ru.lewis.leykabot.model.Top;
 import ru.lewis.leykabot.model.screen.ui.impl.*;
-import ru.lewis.leykabot.model.screen.ui.impl.premium.BuyPremiumScreen;
-import ru.lewis.leykabot.model.screen.ui.impl.premium.SelectUserForBuyPremiumScreen;
-import ru.lewis.leykabot.model.screen.ui.impl.star.BuyStarsScreen;
-import ru.lewis.leykabot.model.screen.ui.impl.star.SelectUserForBuyStarsScreen;
+import ru.lewis.leykabot.model.screen.ui.impl.premium.PremiumBuyScreen;
+import ru.lewis.leykabot.model.screen.ui.impl.premium.UserSelectPremiumScreen;
+import ru.lewis.leykabot.model.screen.ui.impl.star.StarBuyScreen;
+import ru.lewis.leykabot.model.screen.ui.impl.star.UserSelectStarsScreen;
+import ru.lewis.leykabot.model.screen.ui.impl.top.TopSelectScreen;
+import ru.lewis.leykabot.model.screen.ui.impl.top.TopShowScreen;
 import ru.lewis.leykabot.service.*;
 
 @Component
@@ -38,6 +42,8 @@ public class ScreenFactory {
     private final PremiumTransactionService premiumTransactionService;
     private final PremiumConfig premiumConfig;
     private final FragmentPremiumService fragmentPremiumService;
+    private final TopService topService;
+    private final TopFormat topFormat;
 
     public StartScreen createStartScreen(Long chatId, Long userId) {
         return new StartScreen(chatId, userId, clientMessageConfig, buttonsLocConfig, screenManager, telegramService, telegramConfig,this);
@@ -56,39 +62,47 @@ public class ScreenFactory {
         return new SupportScreen(chatId, userId, buttonsLocConfig, clientMessageConfig, screenManager, telegramService, this);
     }
 
-    public DepositRublesScreen createDepositRublesScreen(Long chatId, Long userId) {
-        return new DepositRublesScreen(chatId, userId,
+    public RublesDepositScreen createDepositRublesScreen(Long chatId, Long userId) {
+        return new RublesDepositScreen(chatId, userId,
                 buttonsLocConfig, keyboardLocConfig, clientMessageConfig, transactionService,
                 errorMessageConfig, telegramService, devModeConfig, screenManager, this);
     }
 
-    public BuyStarsScreen createBuyStarsScreen(Long chatId, Long userId) {
-        return new BuyStarsScreen(chatId, userId,
+    public StarBuyScreen createBuyStarsScreen(Long chatId, Long userId) {
+        return new StarBuyScreen(chatId, userId,
                 buttonsLocConfig, keyboardLocConfig, clientMessageConfig, transactionService,
                 errorMessageConfig, telegramService, devModeConfig, starsConfig, screenManager, this);
     }
 
-    public SelectUserForBuyStarsScreen createSelectUserForBuyStarsScreen(Long chatId, Long userId, int stars, int rubles) {
-        return new SelectUserForBuyStarsScreen(chatId, userId, stars, rubles,
+    public UserSelectStarsScreen createSelectUserForBuyStarsScreen(Long chatId, Long userId, int stars, int rubles) {
+        return new UserSelectStarsScreen(chatId, userId, stars, rubles,
                 clientMessageConfig, buttonsLocConfig, telegramService, fragmentStarsService,
                 errorMessageConfig, userService, tonService, starsTransactionService, screenManager, this);
     }
 
-    public SubscribeChannelScreen createSubscribeChannelScreen(Long chatId, Long userId) {
-        return new SubscribeChannelScreen(chatId, userId, telegramService, clientMessageConfig, telegramConfig, buttonsLocConfig, screenManager, this);
+    public ChannelSubscribeScreen createSubscribeChannelScreen(Long chatId, Long userId) {
+        return new ChannelSubscribeScreen(chatId, userId, telegramService, clientMessageConfig, telegramConfig, buttonsLocConfig, screenManager, this);
     }
 
     public ReferralScreen createReferralScreen(Long chatId, Long userId) {
         return new ReferralScreen(chatId, userId, userService, buttonsLocConfig, clientMessageConfig, telegramService, screenManager, this);
     }
 
-    public BuyPremiumScreen createBuyPremiumScreen(Long chatId, Long userId) {
-        return new BuyPremiumScreen(chatId, userId, buttonsLocConfig, keyboardLocConfig, clientMessageConfig, telegramService,
+    public PremiumBuyScreen createBuyPremiumScreen(Long chatId, Long userId) {
+        return new PremiumBuyScreen(chatId, userId, buttonsLocConfig, keyboardLocConfig, clientMessageConfig, telegramService,
                 devModeConfig, premiumConfig, screenManager, this);
     }
 
-    public SelectUserForBuyPremiumScreen createSelectUserForBuyPremiumScreen(Long chatId, Long userId, int months, int rubles) {
-        return new SelectUserForBuyPremiumScreen(chatId, userId, months, rubles, clientMessageConfig, buttonsLocConfig, errorMessageConfig, telegramService,
+    public UserSelectPremiumScreen createSelectUserForBuyPremiumScreen(Long chatId, Long userId, int months, int rubles) {
+        return new UserSelectPremiumScreen(chatId, userId, months, rubles, clientMessageConfig, buttonsLocConfig, errorMessageConfig, telegramService,
                 fragmentPremiumService, premiumTransactionService, userService, tonService, screenManager, this);
+    }
+
+    public TopShowScreen createTopShowScreen(Long chatId, Long userId, Top top, int page) {
+        return new TopShowScreen(chatId, userId, top, page, telegramService, topFormat, buttonsLocConfig, topService, screenManager, this);
+    }
+
+    public TopSelectScreen createTopSelectScreen(Long chatId, Long userId) {
+        return new TopSelectScreen(chatId, userId, clientMessageConfig, buttonsLocConfig, screenManager, this);
     }
 }

@@ -72,6 +72,10 @@ public class StartScreen extends AbstractScreen {
                 screenManager.updateScreen(chatId, screenFactory.createReferralScreen(chatId, userId));
                 break;
             }
+            case "top": {
+                screenManager.updateScreen(chatId, screenFactory.createTopSelectScreen(chatId, userId));
+                break;
+            }
             default:
                 break;
         }
@@ -104,12 +108,18 @@ public class StartScreen extends AbstractScreen {
                 .text(buttonsLocConfig.getProfile())
                 .callbackData("profile")
                 .build();
-        row2.add(profileButton);
+
+        InlineKeyboardButton topButton = InlineKeyboardButton.builder()
+                .text(buttonsLocConfig.getTop())
+                .callbackData("top")
+                .build();
 
         InlineKeyboardButton referralButton = InlineKeyboardButton.builder()
                 .text(buttonsLocConfig.getReferralSystem())
                 .callbackData("referral")
                 .build();
+        row2.add(profileButton);
+        row2.add(topButton);
         row2.add(referralButton);
 
         InlineKeyboardRow row3 = new InlineKeyboardRow();

@@ -66,6 +66,12 @@ localization:
     referral-system: 'Реферальная система'
     referral-create-link: '🤖 Моя реферальная ссылка'
     buy-premium: '💎 Купить Premium'
+    next: 'Следующая страница ->'
+    forward: '<- Предыдущая страница'
+    top: 'Топы'
+    premium-top: 'Топ по премке'
+    stars-top: 'Топ по звездам'
+    rubles-top: 'Топ по рублям'
   error-message:
     username-not-selected: 'Сначала выберите получателя!'
     transaction-not-created: 'Транзакция не создана, деньги не списаны. Код ошибки: {0}, сообщение {1} (Обратитесь к разработчикам)'
@@ -97,6 +103,8 @@ localization:
       💬 {1}
       👤 {2}
   client-message:
+    top-command: |-
+      Выберите топ который хотите посмотреть
     buy-premium-command: |-
       💎 Выберите срок подписки Telegram Premium
     select-user-for-buy-premium-command: |-
@@ -166,3 +174,19 @@ localization:
     subscribe-channel: |-
       Перед пользованием бота подпишись на наш ТГК,
       чтобы не пропускать розыгрыши **ЗВЕЗД** и важные новости!
+
+top:
+  one-page-limit: 6
+  max-limit: 20
+  premium:
+    format: 'Место {0}, пользователь {1} - {2} месяцев'
+    message: |-
+      Топ по премиум (покупка премиум в месяцах)
+  rubles:
+    format: 'Место {0}, пользователь {1} - {2} рублей'
+    message: |-
+      Топ по пополнению кошелька (в рублях)
+  stars:
+    format: 'Место {0}, пользователь {1} - {2} звезд'
+    message: |-
+      Топ по купленным звездам

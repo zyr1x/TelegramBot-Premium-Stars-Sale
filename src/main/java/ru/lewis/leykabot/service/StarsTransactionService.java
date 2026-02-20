@@ -15,6 +15,7 @@ import ru.lewis.leykabot.repository.StarsTransactionRepository;
 import java.text.MessageFormat;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
@@ -27,6 +28,7 @@ public class StarsTransactionService {
     private final TransactionService         transactionService;
     private final TelegramService            telegramService;
     private final LogMessageConfig           logMessageConfig;
+    private final TopService                 topService;
 
     // Кэш: telegramId → список звёздных транзакций DESC по дате
     private Cache<Long, List<StarsTransaction>> cache;
@@ -45,7 +47,7 @@ public class StarsTransactionService {
 
     private List<StarsTransaction> warmUp(Long telegramId) {
         return cache.get(telegramId,
-                id -> starsRepository.findByTelegramIdOrderByCreatedAtDesc(id));
+                id -> new ArrayList<>(starsRepository.findByTelegramIdOrderByCreatedAtDesc(id)));
     }
 
     /** Асинхронная подгрузка кэша — вызывается при /start. */
@@ -53,14 +55,17 @@ public class StarsTransactionService {
         return CompletableFuture.supplyAsync(() -> warmUp(telegramId));
     }
 
-    public List<StarsTransaction> refreshCache(Long telegramId) {
-        List<StarsTransaction> fresh = starsRepository.findByTelegramIdOrderByCreatedAtDesc(telegramId);
-        cache.put(telegramId, fresh);
-        return fresh;
-    }
-
-    public void invalidateCache(Long telegramId) {
-        cache.invalidate(telegramId);
+    /**
+     * Добавляет новую транзакцию в начало списка кэша (порядок DESC).
+     * Если кэша нет — инициализирует через warmUp.
+     */
+    private void addToCache(Long telegramId, StarsTransaction tx) {
+        List<StarsTransaction> cached = cache.getIfPresent(telegramId);
+        if (cached == null) {
+            warmUp(telegramId);
+        } else {
+            cached.add(0, tx);
+        }
     }
 
     // -------------------------------------------------------------------------
@@ -72,9 +77,9 @@ public class StarsTransactionService {
      * Сначала через {@link TransactionService#create} создаётся рублёвая транзакция,
      * затем к ней привязывается звёздная.
      *
-     * @param telegramId        покупатель
-     * @param amountRubles      стоимость в рублях (списывается с баланса)
-     * @param amountStars       количество звёзд
+     * @param telegramId    покупатель
+     * @param amountRubles  стоимость в рублях (списывается с баланса)
+     * @param amountStars   количество звёзд
      */
     @Transactional
     public StarsTransaction create(Long telegramId,
@@ -91,10 +96,15 @@ public class StarsTransactionService {
         starsTx.setTransaction(parentTx);
 
         StarsTransaction saved = starsRepository.save(starsTx);
-        invalidateCache(telegramId);
+
+        // Обновляем кэш без инвалидации
+        addToCache(telegramId, saved);
+
+        topService.updateStarsTop(telegramId, amountStars);
+        topService.updateRublesTop(telegramId, amountRubles);
 
         var tag = telegramService.getUsernameByUserId(telegramId);
-        log.info("Звёздная транзакция #{} для {} {}: {} ⭐ → @{}",
+        log.info("Звёздная транзакция #{} для {} {}: {} ⭐",
                 saved.getId(), tag, telegramId, amountStars);
         telegramService.log(MessageFormat.format(
                 logMessageConfig.getStarsTransactionCreate(),

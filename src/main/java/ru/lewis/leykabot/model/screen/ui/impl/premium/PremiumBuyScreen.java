@@ -18,7 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class BuyPremiumScreen extends AbstractScreen {
+public class PremiumBuyScreen extends AbstractScreen {
 
     private final ButtonsLocConfig    buttonsLocConfig;
     private final KeyboardLocConfig   keyboardLocConfig;
@@ -29,7 +29,7 @@ public class BuyPremiumScreen extends AbstractScreen {
     private final ScreenManager       screenManager;
     private final ScreenFactory       screenFactory;
 
-    public BuyPremiumScreen(Long chatId, Long userId,
+    public PremiumBuyScreen(Long chatId, Long userId,
                             ButtonsLocConfig buttonsLocConfig,
                             KeyboardLocConfig keyboardLocConfig,
                             ClientMessageConfig clientMessageConfig,

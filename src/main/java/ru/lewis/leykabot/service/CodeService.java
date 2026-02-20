@@ -57,10 +57,7 @@ public class CodeService {
     // -------------------------------------------------------------------------
 
     public CompletableFuture<Void> warmUpAll(Long telegramId) {
-        return CompletableFuture.allOf(
-                CompletableFuture.runAsync(() -> warmUpUserCodes(telegramId)),
-                CompletableFuture.runAsync(this::warmUpAllCodes)
-        );
+        return CompletableFuture.runAsync(() -> warmUpUserCodes(telegramId));
     }
 
     /** Подгружает активированные коды пользователя в кэш. Если уже есть — из кэша. */
@@ -70,8 +67,8 @@ public class CodeService {
     }
 
     /** Подгружает все промокоды из БД в кэш за один запрос. */
-    public void warmUpAllCodes() {
-        codeRepository.findAll().forEach(code -> codeCache.put(code.getCode(), code));
+    public CompletableFuture<Void> warmUpAllCodes() {
+        return CompletableFuture.runAsync(() -> codeRepository.findAll().forEach(code -> codeCache.put(code.getCode(), code)));
     }
 
     /** Подгружает конкретный промокод в кэш. Если уже есть — из кэша. */

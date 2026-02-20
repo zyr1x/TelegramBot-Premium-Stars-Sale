@@ -1,5 +1,6 @@
 package ru.lewis.leykabot.repository;
 
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -18,4 +19,8 @@ public interface StarsTransactionRepository extends JpaRepository<StarsTransacti
 
     @Query("SELECT COUNT(s) FROM StarsTransaction s WHERE s.telegramId = :telegramId")
     long countByTelegramId(@Param("telegramId") Long telegramId);
+
+    @Query("SELECT s.telegramId, COALESCE(SUM(s.amountStars), 0) AS total " +
+            "FROM StarsTransaction s GROUP BY s.telegramId ORDER BY total DESC")
+    List<Object[]> findTopByStars(Pageable pageable);
 }

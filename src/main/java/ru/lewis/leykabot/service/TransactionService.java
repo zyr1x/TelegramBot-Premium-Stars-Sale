@@ -16,6 +16,7 @@ import ru.lewis.leykabot.repository.UserRepository;
 import java.text.MessageFormat;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
@@ -29,8 +30,9 @@ public class TransactionService {
     private final TelegramService       telegramService;
     private final LogMessageConfig      logMessageConfig;
     private final UserService           userService;
+    private final TopService            topService;
 
-    // Кэш: telegramId → список рублёвых транзакций DESC по дате
+    // Кэш: telegramId → список транзакций DESC по дате
     private Cache<Long, List<Transaction>> cache;
 
     @PostConstruct
@@ -47,7 +49,20 @@ public class TransactionService {
 
     private List<Transaction> warmUp(Long telegramId) {
         return cache.get(telegramId,
-                id -> transactionRepository.findByTelegramIdOrderByCreatedAtDesc(id));
+                id -> new ArrayList<>(transactionRepository.findByTelegramIdOrderByCreatedAtDesc(id)));
+    }
+
+    /**
+     * Добавляет новую транзакцию в начало списка кэша (сохраняя порядок DESC).
+     * Если кэша ещё нет — просто инициализирует его через warmUp.
+     */
+    private void addToCache(Long telegramId, Transaction tx) {
+        List<Transaction> cached = cache.getIfPresent(telegramId);
+        if (cached == null) {
+            warmUp(telegramId);
+        } else {
+            cached.add(0, tx); // в начало, т.к. порядок DESC по дате
+        }
     }
 
     /** Асинхронная подгрузка кэша — вызывается при /start. */
@@ -55,23 +70,13 @@ public class TransactionService {
         return CompletableFuture.supplyAsync(() -> warmUp(telegramId));
     }
 
-    public List<Transaction> refreshCache(Long telegramId) {
-        List<Transaction> fresh = transactionRepository.findByTelegramIdOrderByCreatedAtDesc(telegramId);
-        cache.put(telegramId, fresh);
-        return fresh;
-    }
-
-    public void invalidateCache(Long telegramId) {
-        cache.invalidate(telegramId);
-    }
-
     // -------------------------------------------------------------------------
     // Запись
     // -------------------------------------------------------------------------
 
     /**
-     * Создаёт рублёвую транзакцию и пополняет баланс пользователя.
-     * Возвращает сохранённую транзакцию — её передают в StarsService / PremiumService.
+     * Создаёт транзакцию, пополняет баланс пользователя и обновляет кэш.
+     * Возвращает сохранённую транзакцию.
      */
     @Transactional
     public Transaction create(Long telegramId, Integer amountRubles) {
@@ -86,8 +91,11 @@ public class TransactionService {
         user.setBalance(user.getBalance() + amountRubles);
         userRepository.save(user);
 
-        userService.invalidateUserCache(telegramId);
-        invalidateCache(telegramId);
+        // Обновляем кэши без инвалидации
+        userService.updateUserCache(user);
+        addToCache(telegramId, saved);
+
+        topService.updateRublesTop(telegramId, amountRubles);
 
         var tag = telegramService.getUsernameByUserId(telegramId);
         log.info("Рублёвая транзакция #{} для {} {}: +{} руб.", saved.getId(), tag, telegramId, amountRubles);

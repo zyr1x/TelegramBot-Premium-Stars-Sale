@@ -1,5 +1,6 @@
 package ru.lewis.leykabot.repository;
 
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -23,4 +24,8 @@ public interface TransactionRepository extends JpaRepository<Transaction, Intege
             @Param("telegramId") Long telegramId,
             @Param("from") LocalDateTime from,
             @Param("to") LocalDateTime to);
+
+    @Query("SELECT t.telegramId, COALESCE(SUM(t.amountRubles), 0) AS total " +
+            "FROM Transaction t GROUP BY t.telegramId ORDER BY total DESC")
+    List<Object[]> findTopByRubles(Pageable pageable);
 }

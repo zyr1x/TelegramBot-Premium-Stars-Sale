@@ -20,7 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class BuyStarsScreen extends AbstractScreen {
+public class StarBuyScreen extends AbstractScreen {
     private final ButtonsLocConfig buttonsLocConfig;
     private final KeyboardLocConfig keyboardLocConfig;
     private final ClientMessageConfig clientMessageConfig;
@@ -33,17 +33,17 @@ public class BuyStarsScreen extends AbstractScreen {
     private final ScreenFactory screenFactory;
 
     private boolean isExpectationMessage;
-    public BuyStarsScreen(Long chatId, Long userId,
-                          ButtonsLocConfig buttonsLocConfig,
-                          KeyboardLocConfig keyboardLocConfig,
-                          ClientMessageConfig clientMessageConfig,
-                          TransactionService transactionService,
-                          ErrorMessageConfig errorMessageConfig,
-                          TelegramService telegramService,
-                          DevModeConfig devModeConfig,
-                          StarsConfig starsConfig,
-                          ScreenManager screenManager,
-                          ScreenFactory screenFactory) {
+    public StarBuyScreen(Long chatId, Long userId,
+                         ButtonsLocConfig buttonsLocConfig,
+                         KeyboardLocConfig keyboardLocConfig,
+                         ClientMessageConfig clientMessageConfig,
+                         TransactionService transactionService,
+                         ErrorMessageConfig errorMessageConfig,
+                         TelegramService telegramService,
+                         DevModeConfig devModeConfig,
+                         StarsConfig starsConfig,
+                         ScreenManager screenManager,
+                         ScreenFactory screenFactory) {
         super(chatId, userId);
         this.buttonsLocConfig = buttonsLocConfig;
         this.keyboardLocConfig = keyboardLocConfig;

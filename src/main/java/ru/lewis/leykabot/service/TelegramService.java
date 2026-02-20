@@ -228,6 +228,22 @@ public class TelegramService {
 
     // ─── Остальные методы ─────────────────────────────────────────────────────
 
+    public String getFullNameByUserId(Long userId) {
+        try {
+            GetChat getChat = GetChat.builder()
+                    .chatId(userId)
+                    .build();
+
+            Chat chat = telegramClient.execute(getChat);
+            String firstName = chat.getFirstName() != null ? chat.getFirstName() : "";
+            String lastName  = chat.getLastName()  != null ? " " + chat.getLastName() : "";
+            return (firstName + lastName).trim();
+        } catch (TelegramApiException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
     public String getUsernameByUserId(Long userId) {
         try {
             GetChat getChat = GetChat.builder()

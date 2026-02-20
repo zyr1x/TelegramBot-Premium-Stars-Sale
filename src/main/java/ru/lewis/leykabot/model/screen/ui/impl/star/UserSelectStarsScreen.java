@@ -17,7 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-public class SelectUserForBuyStarsScreen extends AbstractScreen {
+public class UserSelectStarsScreen extends AbstractScreen {
     private final int rubles, stars;
     private final ClientMessageConfig clientMessageConfig;
     private final ButtonsLocConfig buttonsLocConfig;
@@ -33,17 +33,17 @@ public class SelectUserForBuyStarsScreen extends AbstractScreen {
     private String username = "";
     private boolean isOther = false;
 
-    public SelectUserForBuyStarsScreen(Long chatId, Long userId, int stars, int rubles,
-                                       ClientMessageConfig clientMessageConfig,
-                                       ButtonsLocConfig buttonsLocConfig,
-                                       TelegramService telegramService,
-                                       FragmentStarsService fragmentStarsService,
-                                       ErrorMessageConfig errorMessageConfig,
-                                       UserService userService,
-                                       TonService tonService,
-                                       StarsTransactionService starsTransactionService,
-                                       ScreenManager screenManager,
-                                       ScreenFactory screenFactory) {
+    public UserSelectStarsScreen(Long chatId, Long userId, int stars, int rubles,
+                                 ClientMessageConfig clientMessageConfig,
+                                 ButtonsLocConfig buttonsLocConfig,
+                                 TelegramService telegramService,
+                                 FragmentStarsService fragmentStarsService,
+                                 ErrorMessageConfig errorMessageConfig,
+                                 UserService userService,
+                                 TonService tonService,
+                                 StarsTransactionService starsTransactionService,
+                                 ScreenManager screenManager,
+                                 ScreenFactory screenFactory) {
         super(chatId, userId);
         this.rubles = rubles;
         this.stars = stars;

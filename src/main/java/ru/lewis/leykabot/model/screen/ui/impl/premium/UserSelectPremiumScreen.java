@@ -21,7 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-public class SelectUserForBuyPremiumScreen extends AbstractScreen {
+public class UserSelectPremiumScreen extends AbstractScreen {
     private final int months;
     private final int rubles;
 
@@ -39,18 +39,18 @@ public class SelectUserForBuyPremiumScreen extends AbstractScreen {
     private String  username = "";
     private boolean isOther  = false;
 
-    public SelectUserForBuyPremiumScreen(Long chatId, Long userId,
-                                         int months, int rubles,
-                                         ClientMessageConfig clientMessageConfig,
-                                         ButtonsLocConfig buttonsLocConfig,
-                                         ErrorMessageConfig errorMessageConfig,
-                                         TelegramService telegramService,
-                                         FragmentPremiumService fragmentPremiumService,
-                                         PremiumTransactionService premiumTransactionService,
-                                         UserService userService,
-                                         TonService tonService,
-                                         ScreenManager screenManager,
-                                         ScreenFactory screenFactory) {
+    public UserSelectPremiumScreen(Long chatId, Long userId,
+                                   int months, int rubles,
+                                   ClientMessageConfig clientMessageConfig,
+                                   ButtonsLocConfig buttonsLocConfig,
+                                   ErrorMessageConfig errorMessageConfig,
+                                   TelegramService telegramService,
+                                   FragmentPremiumService fragmentPremiumService,
+                                   PremiumTransactionService premiumTransactionService,
+                                   UserService userService,
+                                   TonService tonService,
+                                   ScreenManager screenManager,
+                                   ScreenFactory screenFactory) {
         super(chatId, userId);
         this.months                   = months;
         this.rubles                   = rubles;

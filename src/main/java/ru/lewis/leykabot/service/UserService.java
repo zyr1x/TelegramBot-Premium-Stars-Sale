@@ -90,12 +90,12 @@ public class UserService {
 
     private List<Referral> loadReferrals(Long userId) {
         return referralCache.get(userId,
-                id -> referralRepository.findAllByUserId(id));
+                id -> new ArrayList<>(referralRepository.findAllByUserId(id)));
     }
 
     private List<ActivatedReferral> loadActivatedReferrals(Long userId) {
         return activatedReferralCache.get(userId,
-                id -> activatedReferralRepository.findByActivatedByUserId(id));
+                id -> new ArrayList<>(activatedReferralRepository.findByActivatedByUserId(id)));
     }
 
     private Referral loadReferralByHash(String hash) {
@@ -134,17 +134,12 @@ public class UserService {
         return getUser(telegramId).map(User::getBalance);
     }
 
-    public Optional<User> refreshUserCache(Long telegramId) {
-        Optional<User> fresh = userRepository.findByTelegramId(telegramId);
-        fresh.ifPresentOrElse(
-                u -> userCache.put(telegramId, u),
-                () -> userCache.invalidate(telegramId)
-        );
-        return fresh;
-    }
-
-    public void invalidateUserCache(Long telegramId) {
-        userCache.invalidate(telegramId);
+    /**
+     * Обновляет пользователя в кэше без запроса в БД.
+     * Вызывается из других сервисов после изменения пользователя.
+     */
+    public void updateUserCache(User user) {
+        userCache.put(user.getTelegramId(), user);
     }
 
     // -------------------------------------------------------------------------
@@ -163,7 +158,7 @@ public class UserService {
         // Кладём в кэш по хэшу
         referralByHashCache.put(hash, saved);
 
-        // Добавляем в существующий список, если он уже закэшен — не инвалидируем
+        // Добавляем в существующий список — не инвалидируем
         List<Referral> cached = referralCache.getIfPresent(userId);
         if (cached != null) {
             cached.add(saved);
@@ -235,14 +230,6 @@ public class UserService {
 
     public boolean hasReferralActivation(Long userId) {
         return !loadActivatedReferrals(userId).isEmpty();
-    }
-
-    public void invalidateReferralCache(Long userId) {
-        referralCache.invalidate(userId);
-    }
-
-    public void invalidateActivatedReferralCache(Long userId) {
-        activatedReferralCache.invalidate(userId);
     }
 
     // -------------------------------------------------------------------------

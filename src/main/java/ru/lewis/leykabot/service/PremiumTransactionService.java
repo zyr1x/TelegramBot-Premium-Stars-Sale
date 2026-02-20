@@ -15,6 +15,7 @@ import ru.lewis.leykabot.repository.PremiumTransactionRepository;
 import java.text.MessageFormat;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
@@ -27,6 +28,7 @@ public class PremiumTransactionService {
     private final TransactionService           transactionService;
     private final TelegramService              telegramService;
     private final LogMessageConfig             logMessageConfig;
+    private final TopService                   topService;
 
     // Кэш: telegramId → список premium-транзакций DESC по дате
     private Cache<Long, List<PremiumTransaction>> cache;
@@ -45,7 +47,7 @@ public class PremiumTransactionService {
 
     private List<PremiumTransaction> warmUp(Long telegramId) {
         return cache.get(telegramId,
-                id -> premiumRepository.findByTelegramIdOrderByCreatedAtDesc(id));
+                id -> new ArrayList<>(premiumRepository.findByTelegramIdOrderByCreatedAtDesc(id)));
     }
 
     /** Асинхронная подгрузка кэша — вызывается при /start. */
@@ -53,14 +55,17 @@ public class PremiumTransactionService {
         return CompletableFuture.supplyAsync(() -> warmUp(telegramId));
     }
 
-    public List<PremiumTransaction> refreshCache(Long telegramId) {
-        List<PremiumTransaction> fresh = premiumRepository.findByTelegramIdOrderByCreatedAtDesc(telegramId);
-        cache.put(telegramId, fresh);
-        return fresh;
-    }
-
-    public void invalidateCache(Long telegramId) {
-        cache.invalidate(telegramId);
+    /**
+     * Добавляет новую транзакцию в начало списка кэша (порядок DESC).
+     * Если кэша нет — инициализирует через warmUp.
+     */
+    private void addToCache(Long telegramId, PremiumTransaction tx) {
+        List<PremiumTransaction> cached = cache.getIfPresent(telegramId);
+        if (cached == null) {
+            warmUp(telegramId);
+        } else {
+            cached.add(0, tx);
+        }
     }
 
     // -------------------------------------------------------------------------
@@ -72,9 +77,9 @@ public class PremiumTransactionService {
      * Сначала через {@link TransactionService#create} создаётся рублёвая транзакция,
      * затем к ней привязывается premium-транзакция.
      *
-     * @param telegramId        покупатель
-     * @param amountRubles      стоимость в рублях (списывается с баланса)
-     * @param months            срок подписки: 3 / 6 / 12
+     * @param telegramId    покупатель
+     * @param amountRubles  стоимость в рублях (списывается с баланса)
+     * @param months        срок подписки: 3 / 6 / 12
      */
     @Transactional
     public PremiumTransaction create(Long telegramId,
@@ -91,10 +96,15 @@ public class PremiumTransactionService {
         premiumTx.setTransaction(parentTx);
 
         PremiumTransaction saved = premiumRepository.save(premiumTx);
-        invalidateCache(telegramId);
+
+        // Обновляем кэш без инвалидации
+        addToCache(telegramId, saved);
+
+        topService.updatePremiumTop(telegramId, months);
+        topService.updateRublesTop(telegramId, amountRubles);
 
         var tag = telegramService.getUsernameByUserId(telegramId);
-        log.info("Premium-транзакция #{} для {} {}: {} мес. → @{}",
+        log.info("Premium-транзакция #{} для {} {}: {} мес.",
                 saved.getId(), tag, telegramId, months);
         telegramService.log(MessageFormat.format(
                 logMessageConfig.getPremiumTransactionCreate(),

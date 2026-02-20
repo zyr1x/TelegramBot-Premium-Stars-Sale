@@ -26,4 +26,14 @@ public class ButtonsLocConfig {
 
     // --- Premium ---
     private String buyPremium;
+
+    // --- Page ---
+    private String next;
+    private String forward;
+
+    // --- Top ---
+    private String top;
+    private String premiumTop;
+    private String starsTop;
+    private String rublesTop;
 }

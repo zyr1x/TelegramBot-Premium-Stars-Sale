@@ -36,4 +36,6 @@ public class ClientMessageConfig {
     private String selectUserForBuyPremiumCommand;
     private String selectYourselfPremium;
     private String selectOtherPremium;
+
+    private String topCommand;
 }

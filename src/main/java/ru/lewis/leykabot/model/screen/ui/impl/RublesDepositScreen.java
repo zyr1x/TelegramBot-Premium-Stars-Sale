@@ -19,7 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class DepositRublesScreen extends AbstractScreen {
+public class RublesDepositScreen extends AbstractScreen {
     private final ButtonsLocConfig buttonsLocConfig;
     private final KeyboardLocConfig keyboardLocConfig;
     private final ClientMessageConfig clientMessageConfig;
@@ -32,7 +32,7 @@ public class DepositRublesScreen extends AbstractScreen {
 
     private boolean isExpectationMessage;
 
-    public DepositRublesScreen(Long chatId, Long userId,
+    public RublesDepositScreen(Long chatId, Long userId,
                                ButtonsLocConfig buttonsLocConfig,
                                KeyboardLocConfig keyboardLocConfig,
                                ClientMessageConfig clientMessageConfig,

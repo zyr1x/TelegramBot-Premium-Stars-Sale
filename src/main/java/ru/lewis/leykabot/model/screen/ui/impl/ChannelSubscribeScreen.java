@@ -15,7 +15,7 @@ import ru.lewis.leykabot.service.TelegramService;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SubscribeChannelScreen extends AbstractScreen {
+public class ChannelSubscribeScreen extends AbstractScreen {
     private final TelegramService telegramService;
     private final ClientMessageConfig clientMessageConfig;
     private final TelegramConfig telegramConfig;
@@ -23,7 +23,7 @@ public class SubscribeChannelScreen extends AbstractScreen {
     private final ScreenManager screenManager;
     private final ScreenFactory screenFactory;
 
-    public SubscribeChannelScreen(Long chatId, Long userId,
+    public ChannelSubscribeScreen(Long chatId, Long userId,
                                   TelegramService telegramService,
                                   ClientMessageConfig clientMessageConfig,
                                   TelegramConfig telegramConfig,
