@@ -10,6 +10,7 @@ import ru.lewis.leykabot.configuration.loc.ButtonsLocConfig;
 import ru.lewis.leykabot.configuration.loc.ClientMessageConfig;
 import ru.lewis.leykabot.configuration.telegram.TelegramConfig;
 import ru.lewis.leykabot.configuration.loc.LogMessageConfig;
+import ru.lewis.leykabot.model.dto.platega.PaymentMethod;
 import ru.lewis.leykabot.service.*;
 import ru.lewis.leykabot.model.screen.ui.ScreenFactory;
 import ru.lewis.leykabot.model.screen.ui.ScreenManager;
@@ -36,6 +37,7 @@ public class TelegramBot implements LongPollingSingleThreadUpdateConsumer {
     private final LogMessageConfig logMessageConfig;
     private final StarsTransactionService starsTransactionService;
     private final PremiumTransactionService premiumTransactionService;
+    private final PlategaService plategaService;
 
     @Override
     public void consume(Update update) {
@@ -80,7 +82,6 @@ public class TelegramBot implements LongPollingSingleThreadUpdateConsumer {
         // command check
         if (message.startsWith("/start")) {
             // active referral
-
             if (message.contains(" ")) {
                 var qrCode = message.split(" ")[1];
 

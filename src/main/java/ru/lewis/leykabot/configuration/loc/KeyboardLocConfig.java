@@ -16,6 +16,7 @@ public class KeyboardLocConfig {
     private Map<String, Deposit> depositRubles;
     private Map<String, BuyStars> buyStars;
     private Map<String, BuyPremium> buyPremium;
+    private PaymentMethods paymentMethods;
 
     @Getter
     @Setter
@@ -36,5 +37,12 @@ public class KeyboardLocConfig {
         private String name;
         private int months;
         private int basePrice;
+    }
+
+    @Data
+    public static class PaymentMethods {
+        private String sbpqr;
+        private String card;
+        private String crypto;
     }
 }

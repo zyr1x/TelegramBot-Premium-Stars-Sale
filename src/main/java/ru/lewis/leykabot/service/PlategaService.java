@@ -1,0 +1,203 @@
+package ru.lewis.leykabot.service;
+
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+import ru.lewis.leykabot.configuration.PlategaConfig;
+import ru.lewis.leykabot.configuration.telegram.TelegramConfig;
+import ru.lewis.leykabot.model.database.entity.PaymentEntity;
+import ru.lewis.leykabot.model.dto.platega.PaymentMethod;
+import ru.lewis.leykabot.model.dto.platega.PaymentCreateResponse;
+import ru.lewis.leykabot.model.dto.platega.PaymentGetStatusResponse;
+import ru.lewis.leykabot.model.dto.platega.PaymentStatus;
+import ru.lewis.leykabot.repository.PaymentRepository;
+
+import java.text.MessageFormat;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+
+@Service
+@RequiredArgsConstructor
+public class PlategaService {
+    private final static String API_URL = "https://app.platega.io/";
+    private final static String API_URL_TRANSACTION = API_URL + "transaction/";
+    private final static String API_URL_PAYMENT = API_URL_TRANSACTION + "process/";
+    private final RestTemplate restTemplate = new RestTemplate();
+
+    // кэш: userId -> список transactionId
+    private final Cache<Long, List<String>> userTransactionsCache = buildCache();
+    // кэш: transactionId -> PaymentCreateResponse
+    private final Cache<String, PaymentCreateResponse> paymentResponseCache = buildCache();
+
+    private final PlategaConfig plategaConfig;
+    private final TelegramConfig telegramConfig;
+    private final PaymentRepository paymentRepository;
+
+    private <K, V> Cache<K, V> buildCache() {
+        return Caffeine.newBuilder()
+                .expireAfterWrite(Duration.ofMinutes(31))
+                .build();
+    }
+
+    private HttpHeaders buildHeaders() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.add("X-MerchantId", plategaConfig.getMerchantId());
+        headers.add("X-Secret", plategaConfig.getApi());
+        return headers;
+    }
+
+    // ─── загрузка из БД в кэш если кэш пустой ────────────────────────────────
+
+    public CompletableFuture<Void> loadAllToCache() {
+        return CompletableFuture.runAsync(() -> {
+            var allPayments = paymentRepository.findAll();
+
+            allPayments.forEach(entity -> {
+                // загружаем userTransactionsCache
+                var transactions = userTransactionsCache.getIfPresent(entity.getTelegramUserId());
+                if (transactions == null) {
+                    userTransactionsCache.put(entity.getTelegramUserId(),
+                            new ArrayList<>(List.of(entity.getTransactionId())));
+                } else {
+                    transactions.add(entity.getTransactionId());
+                }
+
+                // загружаем paymentResponseCache
+                PaymentCreateResponse response = new PaymentCreateResponse();
+                response.setTransactionId(entity.getTransactionId());
+                response.setRedirect(entity.getRedirect());
+                response.setPaymentMethod(entity.getPaymentMethod());
+                response.setStatus(entity.getStatus());
+                paymentResponseCache.put(entity.getTransactionId(), response);
+            });
+        });
+    }
+
+    private List<String> loadTransactions(Long telegramUserId) {
+        var cached = userTransactionsCache.getIfPresent(telegramUserId);
+        if (cached != null) return cached;
+
+        var fromDb = paymentRepository.findAllByTelegramUserId(telegramUserId)
+                .stream()
+                .map(PaymentEntity::getTransactionId)
+                .collect(java.util.stream.Collectors.toCollection(ArrayList::new));
+
+        if (!fromDb.isEmpty()) {
+            userTransactionsCache.put(telegramUserId, fromDb);
+        }
+        return fromDb;
+    }
+
+    // ─── методы ───────────────────────────────────────────────────────────────
+
+    public CompletableFuture<PaymentCreateResponse> createPayment(PaymentMethod paymentMethod, int amountRubles, Long telegramUserId) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                var makeup = switch (paymentMethod) {
+                    case SBPQR -> plategaConfig.getMakeup().getSbpqr();
+                    case CRYPTO -> plategaConfig.getMakeup().getCrypto();
+                    default -> plategaConfig.getMakeup().getCard();
+                };
+
+                Map<String, Object> paymentDetails = new HashMap<>();
+                paymentDetails.put("amount", amountRubles * makeup);
+                paymentDetails.put("currency", "RUB");
+
+                Map<String, Object> body = new HashMap<>();
+                body.put("paymentMethod", paymentMethod.getId());
+                body.put("paymentDetails", paymentDetails);
+                body.put("description", MessageFormat.format("Пополнение баланса для {0} (ТГ айди), на сумму {1} ₽", telegramUserId, amountRubles));
+                body.put("return", telegramConfig.getChannelCheckSubscribeUrl());
+                body.put("failedUrl", telegramConfig.getChannelCheckSubscribeUrl());
+
+                HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, buildHeaders());
+                ResponseEntity<PaymentCreateResponse> response =
+                        restTemplate.postForEntity(API_URL_PAYMENT, entity, PaymentCreateResponse.class);
+
+                var body2 = response.getBody();
+                String transactionId = body2.getTransactionId();
+
+                PaymentEntity paymentEntity = new PaymentEntity();
+                paymentEntity.setTransactionId(transactionId);
+                paymentEntity.setTelegramUserId(telegramUserId);
+                paymentEntity.setRedirect(body2.getRedirect());
+                paymentEntity.setPaymentMethod(body2.getPaymentMethod());
+                paymentEntity.setStatus(body2.getStatus());
+                paymentEntity.setCreatedAt(LocalDateTime.now());
+                paymentRepository.save(paymentEntity);
+
+                // обновляем кэш
+                var transactions = loadTransactions(telegramUserId);
+                transactions.add(transactionId);
+                userTransactionsCache.put(telegramUserId, transactions);
+                paymentResponseCache.put(transactionId, body2);
+
+                return body2;
+            } catch (Exception e) {
+                e.printStackTrace();
+                throw e;
+            }
+        });
+    }
+
+    public CompletableFuture<PaymentStatus> checkStatus(String transactionId) {
+        return CompletableFuture.supplyAsync(() -> {
+            var userId = getUserIdByTransactionId(transactionId);
+            if (userId == null) return PaymentStatus.NULL;
+
+            var link = API_URL_TRANSACTION + transactionId;
+            ResponseEntity<PaymentGetStatusResponse> response =
+                    restTemplate.getForEntity(link, PaymentGetStatusResponse.class);
+
+            return response.getBody().getStatus();
+        });
+    }
+
+    public Long getUserIdByTransactionId(String transactionId) {
+        // сначала ищем в кэше
+        var fromCache = userTransactionsCache.asMap().entrySet().stream()
+                .filter(entry -> entry.getValue().contains(transactionId))
+                .map(Map.Entry::getKey)
+                .findFirst();
+        if (fromCache.isPresent()) return fromCache.get();
+
+        // если нет в кэше — идём в БД
+        return paymentRepository.findById(transactionId)
+                .map(PaymentEntity::getTelegramUserId)
+                .orElse(null);
+    }
+
+    public List<String> getTransactions(Long telegramUserId) {
+        return loadTransactions(telegramUserId);
+    }
+
+    public int getTransactionCount(Long telegramUserId) {
+        return loadTransactions(telegramUserId).size();
+    }
+
+    public PaymentCreateResponse getPaymentCreateResponse(String transactionId) {
+        var cached = paymentResponseCache.getIfPresent(transactionId);
+        if (cached != null) return cached;
+
+        return paymentRepository.findById(transactionId).map(entity -> {
+            PaymentCreateResponse r = new PaymentCreateResponse();
+            r.setTransactionId(entity.getTransactionId());
+            r.setRedirect(entity.getRedirect());
+            r.setPaymentMethod(entity.getPaymentMethod());
+            r.setStatus(entity.getStatus());
+            return r;
+        }).orElse(null);
+    }
+}

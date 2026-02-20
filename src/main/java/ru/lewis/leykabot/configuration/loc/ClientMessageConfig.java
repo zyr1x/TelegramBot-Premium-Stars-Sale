@@ -38,4 +38,8 @@ public class ClientMessageConfig {
     private String selectOtherPremium;
 
     private String topCommand;
+
+    private String rublesDepositSelectPaymentMethodCommand;
+    private String rublesSuccessfullyCreatedPayment;
+    private String paymentCreateLimit;
 }

@@ -1,5 +1,9 @@
 localization:
   keyboard:
+    payment-methods:
+      "sbpqr": "СБП"
+      "card": "Карты"
+      "crypto": "Криптой"
     buy-premium:
       "three-months":
         months: 3
@@ -174,7 +178,11 @@ localization:
     subscribe-channel: |-
       Перед пользованием бота подпишись на наш ТГК,
       чтобы не пропускать розыгрыши **ЗВЕЗД** и важные новости!
-
+    rubles-deposit-select-payment-method-command: |-
+          Выберите платежную систему:
+    rubles-successfully-created-payment: |-
+      Платеж был успешно создан. Сссылка для оплаты: {0}
+    payment-create-limit: 'У вас лимит по созданным платежам ({0})'
 top:
   one-page-limit: 6
   max-limit: 20

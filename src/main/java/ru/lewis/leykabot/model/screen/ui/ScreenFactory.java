@@ -13,6 +13,8 @@ import ru.lewis.leykabot.configuration.loc.ErrorMessageConfig;
 import ru.lewis.leykabot.configuration.loc.KeyboardLocConfig;
 import ru.lewis.leykabot.model.Top;
 import ru.lewis.leykabot.model.screen.ui.impl.*;
+import ru.lewis.leykabot.model.screen.ui.impl.deposit.RublesDepositScreen;
+import ru.lewis.leykabot.model.screen.ui.impl.deposit.RublesDepositSelectPaymentMethodScreen;
 import ru.lewis.leykabot.model.screen.ui.impl.premium.PremiumBuyScreen;
 import ru.lewis.leykabot.model.screen.ui.impl.premium.UserSelectPremiumScreen;
 import ru.lewis.leykabot.model.screen.ui.impl.star.StarBuyScreen;
@@ -44,6 +46,7 @@ public class ScreenFactory {
     private final FragmentPremiumService fragmentPremiumService;
     private final TopService topService;
     private final TopFormat topFormat;
+    private final PlategaService plategaService;
 
     public StartScreen createStartScreen(Long chatId, Long userId) {
         return new StartScreen(chatId, userId, clientMessageConfig, buttonsLocConfig, screenManager, telegramService, telegramConfig,this);
@@ -104,5 +107,10 @@ public class ScreenFactory {
 
     public TopSelectScreen createTopSelectScreen(Long chatId, Long userId) {
         return new TopSelectScreen(chatId, userId, clientMessageConfig, buttonsLocConfig, screenManager, this);
+    }
+
+    public RublesDepositSelectPaymentMethodScreen createRublesDepositSelectPaymentMethodScreen(Long chatId, Long userId, int rubles) {
+        return new RublesDepositSelectPaymentMethodScreen(chatId, userId, rubles, telegramService, buttonsLocConfig,
+                clientMessageConfig, keyboardLocConfig, plategaService, screenManager, this);
     }
 }

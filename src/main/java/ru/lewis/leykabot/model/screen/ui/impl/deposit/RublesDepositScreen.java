@@ -1,4 +1,4 @@
-package ru.lewis.leykabot.model.screen.ui.impl;
+package ru.lewis.leykabot.model.screen.ui.impl.deposit;
 
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
@@ -77,8 +77,7 @@ public class RublesDepositScreen extends AbstractScreen {
             telegramService.sendMessageAuto(chatId, clientMessageConfig.getDepositEnterSum());
             return;
         }
-        transactionService.create(userId, deposit.getAmount());
-        telegramService.sendMessageAuto(chatId, clientMessageConfig.getSuccessfullyCreatedTransaction());
+        handlePayment(deposit.getAmount());
     }
 
     @Override
@@ -95,12 +94,16 @@ public class RublesDepositScreen extends AbstractScreen {
                 telegramService.sendMessageAuto(chatId, errorMessageConfig.getRubles().getMinValue());
                 return;
             }
-            transactionService.create(userId, number);
-            telegramService.sendMessageAuto(chatId, clientMessageConfig.getSuccessfullyCreatedTransaction());
+            handlePayment(number);
+            //telegramService.sendMessageAuto(chatId, clientMessageConfig.getSuccessfullyCreatedTransaction());
             isExpectationMessage = false;
         } catch (NumberFormatException exception) {
             telegramService.sendMessageAuto(chatId, errorMessageConfig.getNumberFormat());
         }
+    }
+
+    private void handlePayment(int rubles) {
+        screenManager.updateScreen(chatId, screenFactory.createRublesDepositSelectPaymentMethodScreen(chatId, userId, rubles));
     }
 
     @Override

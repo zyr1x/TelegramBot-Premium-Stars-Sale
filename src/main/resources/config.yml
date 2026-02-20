@@ -28,6 +28,14 @@ ton:
     api-key: "0b7a752f555fc7d79977b7578a0385d6ee0f2aadd568554135cb6a076f5100e4"
     address: 'UQC3iHb-RVzoykSwEEx0d2IbC8FFsiNElIhF2nqn5J0K1bxf'
 
+platega:
+  api: 'AeMGYmle1lOjE4smVdmJw0B6zjul3euJalXc4aPFoHxCsNETq74CS9pA2gCxPf6qe2fekDohJvE9mQl0e0luBbNemECG0AQIYkfY'
+  merchant-id: 'c3b306ac-18cf-45fb-a3aa-af9849c8d677'
+  makeup:
+    sbpqr: 1.4
+    card: 1.5
+    crypto: 1.1
+
 fragment:
   api-url: https://fragment.com/api
   hash: 5e8d967d101586dec1

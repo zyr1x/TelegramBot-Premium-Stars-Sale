@@ -1,6 +1,5 @@
 package ru.lewis.leykabot.bot;
 
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.ContextRefreshedEvent;
@@ -13,6 +12,7 @@ import ru.lewis.leykabot.configuration.telegram.TelegramBotConfig;
 import ru.lewis.leykabot.configuration.telegram.TelegramConfig;
 import ru.lewis.leykabot.configuration.loc.LogMessageConfig;
 import ru.lewis.leykabot.service.CodeService;
+import ru.lewis.leykabot.service.PlategaService;
 import ru.lewis.leykabot.service.TelegramService;
 import ru.lewis.leykabot.service.TopService;
 
@@ -32,6 +32,7 @@ public class BotInitializer {
     private final GitCommitConfig gitCommitConfig;
     private final TopService topService;
     private final TopFormat topFormat;
+    private final PlategaService plategaService;
 
     private volatile boolean initialized = false;
 
@@ -42,7 +43,8 @@ public class BotInitializer {
 
         CompletableFuture.allOf(
                 codeService.warmUpAllCodes(),
-                topService.preloadAll(topFormat.getMaxLimit())
+                topService.preloadAll(topFormat.getMaxLimit()),
+                plategaService.loadAllToCache()
         ).thenAccept(_void -> {
             String deployMessage = MessageFormat.format(
                     logMessageConfig.getAppEnable(),
