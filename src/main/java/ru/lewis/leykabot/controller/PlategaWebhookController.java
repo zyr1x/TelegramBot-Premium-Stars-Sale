@@ -27,24 +27,28 @@ public class PlategaWebhookController {
             @RequestHeader("X-MerchantId") String merchantId,
             @RequestHeader("X-Secret") String secret,
             @RequestBody Map<String, Object> body) {
-        PaymentStatus status = PaymentStatus.valueOf((String) body.get("status"));
-        String transactionId = (String) body.get("transactionId");
-        float amount = (float) body.get("amount");
+        try {
+            PaymentStatus status = PaymentStatus.valueOf((String) body.get("status"));
+            String transactionId = (String) body.get("transactionId");
+            double amount = ((Number) body.get("amount")).doubleValue();
 
-        if (status != PaymentStatus.CONFIRMED) return ResponseEntity.ok().build();
-        plategaService.checkStatus(transactionId).thenAccept(paymentStatus -> {
-            if (paymentStatus == PaymentStatus.CONFIRMED) {
-                var userId = plategaService.getUserIdByTransactionId(transactionId);
+            if (status != PaymentStatus.CONFIRMED) return ResponseEntity.ok().build();
 
-                if (userId != null) {
-                    transactionService.create(userId, (int) amount);
-
-                    var chatId = telegramService.getChatIdByUserId(userId);
-                    telegramService.sendMessageAuto(chatId, clientMessageConfig.getSuccessfullyCreatedTransaction());
+            plategaService.checkStatus(transactionId).thenAccept(paymentStatus -> {
+                if (paymentStatus == PaymentStatus.CONFIRMED) {
+                    var userId = plategaService.getUserIdByTransactionId(transactionId);
+                    if (userId != null) {
+                        transactionService.create(userId, (int) amount);
+                        var chatId = telegramService.getChatIdByUserId(userId);
+                        telegramService.sendMessageAuto(chatId, clientMessageConfig.getSuccessfullyCreatedTransaction());
+                    }
                 }
-            }
-        });
+            });
 
-        return ResponseEntity.ok().build();
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.ok().build();
+        }
     }
 }
