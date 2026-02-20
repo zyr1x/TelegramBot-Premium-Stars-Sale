@@ -17,6 +17,7 @@ public class ErrorMessageConfig {
     private Rubles rubles;
     private Stars stars;
     private String usernameNotSelected;
+    private String providerCode;
 
     @Getter
     @Setter

@@ -109,6 +109,6 @@ public class ScreenFactory {
 
     public RublesDepositSelectPaymentMethodScreen createRublesDepositSelectPaymentMethodScreen(Long chatId, Long userId, int rubles) {
         return new RublesDepositSelectPaymentMethodScreen(chatId, userId, rubles, telegramService, buttonsLocConfig,
-                clientMessageConfig, keyboardLocConfig, plategaService, screenManager, this);
+                clientMessageConfig, keyboardLocConfig, plategaService, errorMessageConfig, screenManager, this);
     }
 }

@@ -35,6 +35,7 @@ public class PlategaService {
     private final Cache<Long, List<String>> userTransactionsCache = buildCache();
     // кэш: transactionId -> PaymentCreateResponse
     private final Cache<String, PaymentCreateResponse> paymentResponseCache = buildCache();
+    private final Cache<String, Integer> amountResponseCache = buildCache();
 
     private final PlategaConfig plategaConfig;
     private final TelegramConfig telegramConfig;
@@ -42,7 +43,7 @@ public class PlategaService {
 
     private <K, V> Cache<K, V> buildCache() {
         return Caffeine.newBuilder()
-                .expireAfterWrite(Duration.ofMinutes(31))
+                .expireAfterWrite(Duration.ofMinutes(30))
                 .build();
     }
 
@@ -157,6 +158,7 @@ public class PlategaService {
                 transactions.add(transactionId);
                 userTransactionsCache.put(telegramUserId, transactions);
                 paymentResponseCache.put(transactionId, body2);
+                amountResponseCache.put(transactionId, amountRubles);
 
                 return body2;
             } catch (Exception e) {
@@ -179,18 +181,19 @@ public class PlategaService {
         });
     }
 
+    public int getAmount(String transactionId) {
+        return amountResponseCache.getIfPresent(transactionId);
+    }
+
     public Long getUserIdByTransactionId(String transactionId) {
         // сначала ищем в кэше
         var fromCache = userTransactionsCache.asMap().entrySet().stream()
                 .filter(entry -> entry.getValue().contains(transactionId))
                 .map(Map.Entry::getKey)
                 .findFirst();
-        if (fromCache.isPresent()) return fromCache.get();
-
-        // если нет в кэше — идём в БД
-        return paymentRepository.findById(transactionId)
+        return fromCache.orElseGet(() -> paymentRepository.findById(transactionId)
                 .map(PaymentEntity::getTelegramUserId)
-                .orElse(null);
+                .orElse(null));
     }
 
     public List<String> getTransactions(Long telegramUserId) {

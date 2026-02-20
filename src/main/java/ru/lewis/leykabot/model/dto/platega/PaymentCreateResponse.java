@@ -9,4 +9,13 @@ public class PaymentCreateResponse {
     private String redirect;
     private PaymentStatus status;
     private String expiresIn;
+    private String code;
+    private String message;
+    private java.util.List<ProviderError> data;
+
+    @Data
+    public static class ProviderError {
+        private String key;
+        private String message;
+    }
 }

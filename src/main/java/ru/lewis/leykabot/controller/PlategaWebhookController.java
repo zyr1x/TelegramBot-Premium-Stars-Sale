@@ -30,7 +30,6 @@ public class PlategaWebhookController {
         try {
             PaymentStatus status = PaymentStatus.valueOf((String) body.get("status"));
             String transactionId = (String) body.get("transactionId");
-            double amount = ((Number) body.get("amount")).doubleValue();
 
             if (status != PaymentStatus.CONFIRMED) return ResponseEntity.ok().build();
 
@@ -38,7 +37,8 @@ public class PlategaWebhookController {
                 if (paymentStatus == PaymentStatus.CONFIRMED) {
                     var userId = plategaService.getUserIdByTransactionId(transactionId);
                     if (userId != null) {
-                        transactionService.create(userId, (int) amount);
+                        var amount = plategaService.getAmount(transactionId);
+                        transactionService.create(userId, amount);
                         var chatId = telegramService.getChatIdByUserId(userId);
                         telegramService.sendMessageAuto(chatId, clientMessageConfig.getSuccessfullyCreatedTransaction());
                     }

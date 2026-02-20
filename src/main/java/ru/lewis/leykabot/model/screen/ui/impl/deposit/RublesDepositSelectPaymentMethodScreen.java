@@ -6,6 +6,7 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKe
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 import ru.lewis.leykabot.configuration.loc.ButtonsLocConfig;
 import ru.lewis.leykabot.configuration.loc.ClientMessageConfig;
+import ru.lewis.leykabot.configuration.loc.ErrorMessageConfig;
 import ru.lewis.leykabot.configuration.loc.KeyboardLocConfig;
 import ru.lewis.leykabot.model.dto.platega.PaymentCreateResponse;
 import ru.lewis.leykabot.model.dto.platega.PaymentMethod;
@@ -28,6 +29,7 @@ public class RublesDepositSelectPaymentMethodScreen extends AbstractScreen {
     private final ClientMessageConfig clientMessageConfig;
     private final KeyboardLocConfig keyboardLocConfig;
     private final PlategaService plategaService;
+    private final ErrorMessageConfig errorMessageConfig;
     private final ScreenManager screenManager;
     private final ScreenFactory screenFactory;
 
@@ -37,6 +39,7 @@ public class RublesDepositSelectPaymentMethodScreen extends AbstractScreen {
                                                   ClientMessageConfig clientMessageConfig,
                                                   KeyboardLocConfig keyboardLocConfig,
                                                   PlategaService plategaService,
+                                                  ErrorMessageConfig errorMessageConfig,
                                                   ScreenManager screenManager,
                                                   ScreenFactory screenFactory) {
         super(chatId, userId);
@@ -46,6 +49,7 @@ public class RublesDepositSelectPaymentMethodScreen extends AbstractScreen {
         this.clientMessageConfig = clientMessageConfig;
         this.keyboardLocConfig = keyboardLocConfig;
         this.plategaService = plategaService;
+        this.errorMessageConfig = errorMessageConfig;
         this.screenManager = screenManager;
         this.screenFactory = screenFactory;
     }
@@ -74,8 +78,13 @@ public class RublesDepositSelectPaymentMethodScreen extends AbstractScreen {
         }
 
         plategaService.createPayment(paymentMethod, rubles, userId).thenAccept(response -> {
+            if (response.getData() != null && !response.getData().isEmpty()) {
+                var data = response.getData().getFirst();
+                telegramService.sendMessageAuto(chatId, MessageFormat.format(errorMessageConfig.getProviderCode(), data.getMessage()));
+                return;
+            }
             var link = response.getRedirect();
-            telegramService.sendMessage(chatId, MessageFormat.format(clientMessageConfig.getRublesSuccessfullyCreatedPayment(), link));
+            telegramService.sendMessageAuto(chatId, MessageFormat.format(clientMessageConfig.getRublesSuccessfullyCreatedPayment(), link));
         });
 
         screenManager.updateScreen(chatId, screenFactory.createStartScreen(chatId, userId));

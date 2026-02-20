@@ -35,9 +35,9 @@ platega:
   api: 'AeMGYmle1lOjE4smVdmJw0B6zjul3euJalXc4aPFoHxCsNETq74CS9pA2gCxPf6qe2fekDohJvE9mQl0e0luBbNemECG0AQIYkfY'
   merchant-id: 'c3b306ac-18cf-45fb-a3aa-af9849c8d677'
   makeup:
-    sbpqr: 1.4
-    card: 1.5
-    crypto: 1.1
+    sbpqr: 1.04
+    card: 1.05
+    crypto: 1.01
 
 fragment:
   api-url: https://fragment.com/api
