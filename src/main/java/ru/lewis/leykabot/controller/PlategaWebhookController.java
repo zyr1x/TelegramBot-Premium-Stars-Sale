@@ -28,33 +28,20 @@ public class PlategaWebhookController {
             @RequestHeader("X-Secret") String secret,
             @RequestBody Map<String, Object> body) {
         try {
-            System.out.println("Webhook body: " + body);
             PaymentStatus status = PaymentStatus.valueOf((String) body.get("status"));
-            String transactionId = (String) body.get("transactionId");
+            String transactionId = (String) body.get("id");
 
             if (status != PaymentStatus.CONFIRMED) return ResponseEntity.ok().build();
 
             plategaService.checkStatus(transactionId).thenAccept(paymentStatus -> {
-                System.out.println("checkStatus result: " + paymentStatus);
-                System.out.println("transactionId: " + transactionId);
-
                 if (paymentStatus == PaymentStatus.CONFIRMED) {
                     var userId = plategaService.getUserIdByTransactionId(transactionId);
-                    System.out.println("userId: " + userId);
 
                     if (userId != null) {
                         var amount = plategaService.getAmount(transactionId);
-                        System.out.println("amount: " + amount);
-
                         transactionService.create(userId, amount);
-                        System.out.println("transaction created");
-
                         var chatId = telegramService.getChatIdByUserId(userId);
-                        System.out.println("chatId: " + chatId);
-
                         telegramService.sendMessageAuto(chatId, clientMessageConfig.getSuccessfullyCreatedTransaction());
-                        System.out.println("message sent");
-
                         plategaService.deleteTransaction(transactionId);
                     }
                 }
