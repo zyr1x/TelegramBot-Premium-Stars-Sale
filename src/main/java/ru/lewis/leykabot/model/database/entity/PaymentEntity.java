@@ -21,6 +21,9 @@ public class PaymentEntity {
     @Column(name = "redirect")
     private String redirect;
 
+    @Column(name = "amount")
+    private Integer amount;
+
     @Column(name = "payment_method")
     private String paymentMethod;
 

@@ -71,6 +71,8 @@ public class PlategaService {
                     transactions.add(entity.getTransactionId());
                 }
 
+                amountResponseCache.put(entity.getTransactionId(), entity.getAmount());
+
                 // загружаем paymentResponseCache
                 PaymentCreateResponse response = new PaymentCreateResponse();
                 response.setTransactionId(entity.getTransactionId());
@@ -94,6 +96,10 @@ public class PlategaService {
         if (!fromDb.isEmpty()) {
             userTransactionsCache.put(telegramUserId, fromDb);
         }
+
+        paymentRepository.findAllByTelegramUserId(telegramUserId).forEach(entity -> {
+            amountResponseCache.put(entity.getTransactionId(), entity.getAmount());
+        });
         return fromDb;
     }
 
@@ -151,6 +157,7 @@ public class PlategaService {
                 paymentEntity.setPaymentMethod(body2.getPaymentMethod());
                 paymentEntity.setStatus(body2.getStatus());
                 paymentEntity.setCreatedAt(LocalDateTime.now());
+                paymentEntity.setAmount(amountRubles);
                 paymentRepository.save(paymentEntity);
 
                 // обновляем кэш
@@ -196,7 +203,12 @@ public class PlategaService {
     }
 
     public int getAmount(String transactionId) {
-        return amountResponseCache.getIfPresent(transactionId);
+        var cached = amountResponseCache.getIfPresent(transactionId);
+        if (cached != null) return cached;
+
+        return paymentRepository.findById(transactionId)
+                .map(PaymentEntity::getAmount)
+                .orElse(0);
     }
 
     public Long getUserIdByTransactionId(String transactionId) {
