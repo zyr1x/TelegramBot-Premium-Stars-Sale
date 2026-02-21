@@ -168,22 +168,14 @@ public class UserSelectStarsScreen extends AbstractScreen {
         row1.add(otherButton);
 
         InlineKeyboardRow row2 = new InlineKeyboardRow();
-        InlineKeyboardButton confirmButton = InlineKeyboardButton.builder()
-                .text(buttonsLocConfig.getConfirm())
-                .callbackData("confirm")
-                .build();
-        row2.add(confirmButton);
-
-        InlineKeyboardRow row3 = new InlineKeyboardRow();
         InlineKeyboardButton backButton = InlineKeyboardButton.builder()
                 .text(buttonsLocConfig.getBack())
                 .callbackData("back")
                 .build();
-        row3.add(backButton);
+        row2.add(backButton);
 
         keyboard.add(row1);
         keyboard.add(row2);
-        keyboard.add(row3);
 
         return InlineKeyboardMarkup.builder()
                 .keyboard(keyboard)

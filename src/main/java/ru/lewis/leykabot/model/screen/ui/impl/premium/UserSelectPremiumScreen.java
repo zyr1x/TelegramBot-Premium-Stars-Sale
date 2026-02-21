@@ -191,19 +191,12 @@ public class UserSelectPremiumScreen extends AbstractScreen {
 
         InlineKeyboardRow row2 = new InlineKeyboardRow();
         row2.add(InlineKeyboardButton.builder()
-                .text(buttonsLocConfig.getConfirm())
-                .callbackData("confirm")
-                .build());
-
-        InlineKeyboardRow row3 = new InlineKeyboardRow();
-        row3.add(InlineKeyboardButton.builder()
                 .text(buttonsLocConfig.getBack())
                 .callbackData("back")
                 .build());
 
         keyboard.add(row1);
         keyboard.add(row2);
-        keyboard.add(row3);
 
         return InlineKeyboardMarkup.builder().keyboard(keyboard).build();
     }
