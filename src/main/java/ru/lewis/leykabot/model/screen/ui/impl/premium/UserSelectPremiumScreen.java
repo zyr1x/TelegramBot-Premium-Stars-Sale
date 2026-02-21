@@ -72,7 +72,6 @@ public class UserSelectPremiumScreen extends AbstractScreen {
 
             case "yourself" -> {
                 username = telegramService.getUsernameByUserId(userId);
-                telegramService.sendMessageAuto(chatId, clientMessageConfig.getSelectYourself());
                 handleConfirm();
             }
 
@@ -164,8 +163,6 @@ public class UserSelectPremiumScreen extends AbstractScreen {
         if (!isOther) return;
         username = text.startsWith("@") ? text.substring(1) : text;
         isOther  = false;
-        telegramService.sendMessageAuto(chatId,
-                MessageFormat.format(clientMessageConfig.getIntroducedUsername(), username));
         handleConfirm();
     }
 

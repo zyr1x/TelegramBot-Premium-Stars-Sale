@@ -24,9 +24,7 @@ public class ClientMessageConfig {
     private String selectUserForBuyStarsCommand;
     private String successfullyCreatedTransaction;
     private String thanksForPayment;
-    private String selectYourself;
     private String selectOther;
-    private String introducedUsername;
     private String referralLinkMessage;
     private String referralActivated;
 
