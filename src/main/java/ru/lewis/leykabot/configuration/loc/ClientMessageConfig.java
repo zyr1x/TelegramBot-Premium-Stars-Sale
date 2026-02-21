@@ -42,5 +42,5 @@ public class ClientMessageConfig {
     private String rublesSuccessfullyCreatedPayment;
     private String paymentCreateLimit;
 
-    private String rublesDepositAddCommand;
+    private String rublesReplenishCommand;
 }

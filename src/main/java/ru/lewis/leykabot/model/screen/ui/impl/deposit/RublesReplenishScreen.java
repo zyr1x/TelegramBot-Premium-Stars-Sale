@@ -45,7 +45,7 @@ public class RublesReplenishScreen extends AbstractScreen {
 
     @Override
     public String getText() {
-        return MessageFormat.format(clientMessageConfig.getRublesDepositAddCommand(), shortageRubles);
+        return MessageFormat.format(clientMessageConfig.getRublesReplenishCommand(), shortageRubles);
     }
 
     @Override
