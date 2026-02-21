@@ -73,14 +73,13 @@ public class UserSelectPremiumScreen extends AbstractScreen {
             case "yourself" -> {
                 username = telegramService.getUsernameByUserId(userId);
                 telegramService.sendMessageAuto(chatId, clientMessageConfig.getSelectYourself());
+                handleConfirm();
             }
 
             case "other" -> {
                 isOther = true;
                 telegramService.sendMessageAuto(chatId, clientMessageConfig.getSelectOther());
             }
-
-            case "confirm" -> handleConfirm();
 
             case "back" ->
                     screenManager.updateScreen(chatId, screenFactory.createBuyPremiumScreen(chatId, userId));
@@ -167,6 +166,7 @@ public class UserSelectPremiumScreen extends AbstractScreen {
         isOther  = false;
         telegramService.sendMessageAuto(chatId,
                 MessageFormat.format(clientMessageConfig.getIntroducedUsername(), username));
+        handleConfirm();
     }
 
     @Override
