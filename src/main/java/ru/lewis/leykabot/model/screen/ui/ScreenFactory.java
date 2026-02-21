@@ -12,6 +12,7 @@ import ru.lewis.leykabot.configuration.loc.ErrorMessageConfig;
 import ru.lewis.leykabot.configuration.loc.KeyboardLocConfig;
 import ru.lewis.leykabot.model.Top;
 import ru.lewis.leykabot.model.screen.ui.impl.*;
+import ru.lewis.leykabot.model.screen.ui.impl.deposit.RublesReplenishScreen;
 import ru.lewis.leykabot.model.screen.ui.impl.deposit.RublesDepositScreen;
 import ru.lewis.leykabot.model.screen.ui.impl.deposit.RublesDepositSelectPaymentMethodScreen;
 import ru.lewis.leykabot.model.screen.ui.impl.premium.PremiumBuyScreen;
@@ -110,5 +111,9 @@ public class ScreenFactory {
     public RublesDepositSelectPaymentMethodScreen createRublesDepositSelectPaymentMethodScreen(Long chatId, Long userId, int rubles) {
         return new RublesDepositSelectPaymentMethodScreen(chatId, userId, rubles, telegramService, buttonsLocConfig,
                 clientMessageConfig, keyboardLocConfig, plategaService, errorMessageConfig, screenManager, this);
+    }
+
+    public RublesReplenishScreen createRublesReplenishScreen(Long chatId, Long userId, int rubles) {
+        return new RublesReplenishScreen(chatId, userId, rubles, buttonsLocConfig, clientMessageConfig, screenManager, this);
     }
 }

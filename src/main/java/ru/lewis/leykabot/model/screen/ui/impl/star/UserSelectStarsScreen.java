@@ -106,10 +106,12 @@ public class UserSelectStarsScreen extends AbstractScreen {
                         telegramService.sendMessageAuto(chatId, MessageFormat.format(errorMessageConfig.getFragmentError(), transaction.getError()));
                         return;
                     }
+                    var balanceUserOptional = userService.getBalance(userId);
+                    int balance = balanceUserOptional.orElse(0);
 
-                    var balanceUser = userService.getBalance(userId);
-                    if (balanceUser.isEmpty() || balanceUser.get() < rubles) {
-                        telegramService.sendMessageAuto(chatId, clientMessageConfig.getRublesNotEnough());
+                    if (balance < rubles) {
+                        var replenish = rubles - balance + 1; // + 1 на всякий случай, комиссия блять за калькулятор
+                        screenManager.updateScreen(chatId, screenFactory.createRublesReplenishScreen(chatId, userId, replenish));
                         return;
                     }
                     transaction.getTransaction().getMessages().forEach(message -> {

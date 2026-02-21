@@ -181,6 +181,8 @@ localization:
     rubles-successfully-created-payment: |-
       Платеж был успешно создан. Сссылка для оплаты: {0}
     payment-create-limit: 'У вас лимит по созданным платежам ({0})'
+    rubles-deposit-add-command: |-
+      Вам нехватает {0} рублей для покупки, создать платеж на них?
 top:
   one-page-limit: 6
   max-limit: 20

@@ -119,11 +119,13 @@ public class UserSelectPremiumScreen extends AbstractScreen {
                                 MessageFormat.format(errorMessageConfig.getFragmentError(), txResponse.getError()));
                         return;
                     }
-
                     txResponse.getTransaction().getMessages().forEach(message -> {
-                        var balance = userService.getBalance(userId);
-                        if (balance.isEmpty() || balance.get() < rubles) {
-                            telegramService.sendMessageAuto(chatId, clientMessageConfig.getRublesNotEnough());
+                        var balanceUserOptional = userService.getBalance(userId);
+                        int balance = balanceUserOptional.orElse(0);
+
+                        if (balance < rubles) {
+                            var replenish = rubles - balance + 1; // + 1 на всякий случай, комиссия блять за калькулятор
+                            screenManager.updateScreen(chatId, screenFactory.createRublesReplenishScreen(chatId, userId, replenish));
                             return;
                         }
 

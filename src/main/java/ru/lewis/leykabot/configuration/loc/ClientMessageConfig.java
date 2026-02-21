@@ -27,7 +27,6 @@ public class ClientMessageConfig {
     private String selectYourself;
     private String selectOther;
     private String introducedUsername;
-    private String rublesNotEnough;
     private String referralLinkMessage;
     private String referralActivated;
 
@@ -42,4 +41,6 @@ public class ClientMessageConfig {
     private String rublesDepositSelectPaymentMethodCommand;
     private String rublesSuccessfullyCreatedPayment;
     private String paymentCreateLimit;
+
+    private String rublesDepositAddCommand;
 }
