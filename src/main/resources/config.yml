@@ -17,7 +17,6 @@ dev-mode:
 
 markup:
   star: 0.015 # in usdt for 1
-  premium: 4.0 # in usdt for 1 month
   profit: 1.05
   platega: 1.04
 

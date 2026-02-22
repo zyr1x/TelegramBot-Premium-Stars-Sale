@@ -29,6 +29,7 @@ public class KeyboardLocConfig {
     public static class BuyPremium {
         private String name;
         private int months;
+        private float amount;
     }
 
     @Data

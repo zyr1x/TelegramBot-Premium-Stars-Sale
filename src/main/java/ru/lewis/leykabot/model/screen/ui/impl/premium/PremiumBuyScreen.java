@@ -74,7 +74,9 @@ public class PremiumBuyScreen extends AbstractScreen {
             var rate = rateResponse.getRate();
 
             int months = buyPremium.getMonths();
-            int rubles = (int) Math.ceil(markupConfig.getPremium() * months * rate * markupConfig.getPlatega() * markupConfig.getProfit());
+            float amount = buyPremium.getAmount();
+
+            int rubles = (int) Math.ceil(amount * rate * markupConfig.getPlatega() * markupConfig.getProfit());
 
             screenManager.updateScreen(chatId,
                     screenFactory.createSelectUserForBuyPremiumScreen(chatId, userId, months, rubles));

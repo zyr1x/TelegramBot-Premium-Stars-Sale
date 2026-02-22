@@ -8,15 +8,18 @@ localization:
       "three-months":
         months: 3
         name: "💎 3 месяца"
+        amount: 12.0 # в баксах
       "six-months":
         months: 6
         name: "💎 6 месяцев"
+        amount: 16.0
       "twelve-months":
         months: 12
         name: "💎 12 месяцев"
+        amount: 29.0
     buy-stars:
       "one-hundred":
-        amount: 100
+        amount: 100 # в рублях
         name: "100 ⭐️"
       "two-hundred":
         amount: 200
