@@ -19,7 +19,7 @@ localization:
         amount: 29.0
     buy-stars:
       "one-hundred":
-        amount: 100 # в рублях
+        amount: 100 # кол-во покупаемых звезд, цена расчитывается относительно config.yml -> markup: //
         name: "100 ⭐️"
       "two-hundred":
         amount: 200
