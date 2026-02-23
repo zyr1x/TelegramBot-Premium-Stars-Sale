@@ -29,7 +29,6 @@ public class PlategaService {
     private final static String API_URL_TRANSACTION = API_URL + "transaction/";
     private final static String API_URL_PAYMENT = API_URL_TRANSACTION + "process/";
     private final static String API_URL_RATES = API_URL + "rates/payment_method_rate";
-    private final RestTemplate restTemplate = new RestTemplate();
 
     // кэш: userId -> список transactionId
     private final Cache<Long, List<String>> userTransactionsCache = buildCache();
@@ -40,6 +39,7 @@ public class PlategaService {
     private final PlategaConfig plategaConfig;
     private final TelegramConfig telegramConfig;
     private final PaymentRepository paymentRepository;
+    private final RestTemplate restTemplate;
 
     private <K, V> Cache<K, V> buildCache() {
         return Caffeine.newBuilder()

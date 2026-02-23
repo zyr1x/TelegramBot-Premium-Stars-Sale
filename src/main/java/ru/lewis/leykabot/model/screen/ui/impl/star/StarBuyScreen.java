@@ -13,7 +13,7 @@ import ru.lewis.leykabot.configuration.loc.KeyboardLocConfig;
 import ru.lewis.leykabot.model.screen.ui.AbstractScreen;
 import ru.lewis.leykabot.model.screen.ui.ScreenFactory;
 import ru.lewis.leykabot.model.screen.ui.ScreenManager;
-import ru.lewis.leykabot.service.PlategaService;
+import ru.lewis.leykabot.service.RapiraService;
 import ru.lewis.leykabot.service.TelegramService;
 import ru.lewis.leykabot.service.TransactionService;
 
@@ -25,12 +25,11 @@ public class StarBuyScreen extends AbstractScreen {
     private final ButtonsLocConfig buttonsLocConfig;
     private final KeyboardLocConfig keyboardLocConfig;
     private final ClientMessageConfig clientMessageConfig;
-    private final TransactionService transactionService;
     private final ErrorMessageConfig errorMessageConfig;
     private final TelegramService telegramService;
     private final DevModeConfig devModeConfig;
     private final MarkupConfig markupConfig;
-    private final PlategaService plategaService;
+    private final RapiraService rapiraService;
     private final ScreenManager screenManager;
     private final ScreenFactory screenFactory;
 
@@ -39,24 +38,22 @@ public class StarBuyScreen extends AbstractScreen {
                          ButtonsLocConfig buttonsLocConfig,
                          KeyboardLocConfig keyboardLocConfig,
                          ClientMessageConfig clientMessageConfig,
-                         TransactionService transactionService,
                          ErrorMessageConfig errorMessageConfig,
                          TelegramService telegramService,
                          DevModeConfig devModeConfig,
                          MarkupConfig markupConfig,
-                         PlategaService plategaService,
+                         RapiraService rapiraService,
                          ScreenManager screenManager,
                          ScreenFactory screenFactory) {
         super(chatId, userId);
         this.buttonsLocConfig = buttonsLocConfig;
         this.keyboardLocConfig = keyboardLocConfig;
         this.clientMessageConfig = clientMessageConfig;
-        this.transactionService = transactionService;
         this.errorMessageConfig = errorMessageConfig;
         this.telegramService = telegramService;
         this.devModeConfig = devModeConfig;
         this.markupConfig = markupConfig;
-        this.plategaService = plategaService;
+        this.rapiraService = rapiraService;
         this.screenManager = screenManager;
         this.screenFactory = screenFactory;
     }
@@ -110,9 +107,7 @@ public class StarBuyScreen extends AbstractScreen {
     }
 
     private void handleBuy(int stars) {
-        plategaService.getRateRubInUSDT().thenAccept(rateResponse -> {
-            var rate = rateResponse.getRate();
-
+        rapiraService.getUsdtToRubRateWithMarkup().thenAccept(rate -> {
             var rubles = (int) Math.ceil(stars * rate * markupConfig.getStar() * markupConfig.getPlatega() * markupConfig.getProfit());
             screenManager.updateScreen(chatId, screenFactory.createSelectUserForBuyStarsScreen(chatId, userId, stars, rubles));
         });

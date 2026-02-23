@@ -13,6 +13,7 @@ import ru.lewis.leykabot.model.screen.ui.AbstractScreen;
 import ru.lewis.leykabot.model.screen.ui.ScreenFactory;
 import ru.lewis.leykabot.model.screen.ui.ScreenManager;
 import ru.lewis.leykabot.service.PlategaService;
+import ru.lewis.leykabot.service.RapiraService;
 import ru.lewis.leykabot.service.TelegramService;
 
 import java.util.ArrayList;
@@ -27,7 +28,7 @@ public class PremiumBuyScreen extends AbstractScreen {
     private final TelegramService     telegramService;
     private final DevModeConfig       devModeConfig;
     private final MarkupConfig        markupConfig;
-    private final PlategaService      plategaService;
+    private final RapiraService       rapiraService;
     private final ScreenManager       screenManager;
     private final ScreenFactory       screenFactory;
 
@@ -38,7 +39,7 @@ public class PremiumBuyScreen extends AbstractScreen {
                             TelegramService telegramService,
                             DevModeConfig devModeConfig,
                             MarkupConfig markupConfig,
-                            PlategaService plategaService,
+                            RapiraService rapiraService,
                             ScreenManager screenManager,
                             ScreenFactory screenFactory) {
         super(chatId, userId);
@@ -48,7 +49,7 @@ public class PremiumBuyScreen extends AbstractScreen {
         this.telegramService = telegramService;
         this.devModeConfig = devModeConfig;
         this.markupConfig = markupConfig;
-        this.plategaService = plategaService;
+        this.rapiraService = rapiraService;
         this.screenManager = screenManager;
         this.screenFactory = screenFactory;
     }
@@ -70,9 +71,7 @@ public class PremiumBuyScreen extends AbstractScreen {
         var buyPremium = premiumButtons.get(callback);
         if (buyPremium == null) return;
 
-        plategaService.getRateRubInUSDT().thenAccept(rateResponse -> {
-            var rate = rateResponse.getRate();
-
+        rapiraService.getUsdtToRubRateWithMarkup().thenAccept(rate -> {
             int months = buyPremium.getMonths();
             float amount = buyPremium.getAmount();
 

@@ -22,9 +22,8 @@ import java.util.concurrent.CompletableFuture;
 @Service
 @RequiredArgsConstructor
 public class FragmentStarsService {
-
     private final FragmentConfig config;
-    private final RestTemplate restTemplate = new RestTemplate();
+    private final RestTemplate restTemplate;
 
     private HttpHeaders buildHeaders() {
         HttpHeaders headers = new HttpHeaders();

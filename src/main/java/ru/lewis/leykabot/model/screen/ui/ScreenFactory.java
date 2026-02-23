@@ -46,6 +46,7 @@ public class ScreenFactory {
     private final TopService topService;
     private final TopFormat topFormat;
     private final PlategaService plategaService;
+    private final RapiraService rapiraService;
 
     public StartScreen createStartScreen(Long chatId, Long userId) {
         return new StartScreen(chatId, userId, clientMessageConfig, buttonsLocConfig, screenManager, telegramService, telegramConfig,this);
@@ -72,8 +73,8 @@ public class ScreenFactory {
 
     public StarBuyScreen createBuyStarsScreen(Long chatId, Long userId) {
         return new StarBuyScreen(chatId, userId,
-                buttonsLocConfig, keyboardLocConfig, clientMessageConfig, transactionService,
-                errorMessageConfig, telegramService, devModeConfig, markupConfig, plategaService, screenManager, this);
+                buttonsLocConfig, keyboardLocConfig, clientMessageConfig,
+                errorMessageConfig, telegramService, devModeConfig, markupConfig, rapiraService, screenManager, this);
     }
 
     public UserSelectStarsScreen createSelectUserForBuyStarsScreen(Long chatId, Long userId, int stars, int rubles) {
@@ -92,7 +93,7 @@ public class ScreenFactory {
 
     public PremiumBuyScreen createBuyPremiumScreen(Long chatId, Long userId) {
         return new PremiumBuyScreen(chatId, userId, buttonsLocConfig, keyboardLocConfig, clientMessageConfig, telegramService,
-                devModeConfig, markupConfig, plategaService, screenManager, this);
+                devModeConfig, markupConfig, rapiraService, screenManager, this);
     }
 
     public UserSelectPremiumScreen createSelectUserForBuyPremiumScreen(Long chatId, Long userId, int months, int rubles) {

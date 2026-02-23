@@ -2,6 +2,7 @@ plugins {
     id("java")
     alias(libs.plugins.spring.boot)
     alias(libs.plugins.spring.dependency.management)
+    kotlin("jvm")
 }
 
 group = "ru.lewis.leykabot"
@@ -34,4 +35,8 @@ dependencies {
     implementation("org.ton.ton4j:smartcontract:1.3.5")
 
     implementation("com.github.ben-manes.caffeine:caffeine:3.2.3")
+    implementation(kotlin("stdlib-jdk8"))
+}
+kotlin {
+    jvmToolchain(21)
 }
