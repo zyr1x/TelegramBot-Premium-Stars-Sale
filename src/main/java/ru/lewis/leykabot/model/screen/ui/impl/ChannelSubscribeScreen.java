@@ -46,17 +46,7 @@ public class ChannelSubscribeScreen extends AbstractScreen {
 
     @Override
     public void handleCallback(String callback, TelegramClient bot) {
-        switch (callback) {
-            case "check-sub": {
-                if (!telegramService.isUserSubscribed(userId)) {
-                    return;
-                }
-                screenManager.updateScreen(chatId, screenFactory.createStartScreen(chatId, userId));
-                break;
-            }
-            default:
-                break;
-        }
+
     }
 
     @Override
@@ -75,15 +65,7 @@ public class ChannelSubscribeScreen extends AbstractScreen {
                 .build();
         row1.add(goChannelButton);
 
-        InlineKeyboardRow row2 = new InlineKeyboardRow();
-        InlineKeyboardButton checkSubButton = InlineKeyboardButton.builder()
-                .text(buttonsLocConfig.getCheckSub())
-                .callbackData("check-sub")
-                .build();
-        row2.add(checkSubButton);
-
         keyboard.add(row1);
-        keyboard.add(row2);
 
         return InlineKeyboardMarkup.builder()
                 .keyboard(keyboard)
