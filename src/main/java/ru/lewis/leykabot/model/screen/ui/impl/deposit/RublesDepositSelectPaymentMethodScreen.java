@@ -10,6 +10,7 @@ import ru.lewis.leykabot.configuration.loc.ErrorMessageConfig;
 import ru.lewis.leykabot.configuration.loc.KeyboardLocConfig;
 import ru.lewis.leykabot.model.dto.platega.PaymentCreateResponse;
 import ru.lewis.leykabot.model.dto.platega.PaymentMethod;
+import ru.lewis.leykabot.model.dto.platega.PaymentStatus;
 import ru.lewis.leykabot.model.screen.ui.AbstractScreen;
 import ru.lewis.leykabot.model.screen.ui.ScreenFactory;
 import ru.lewis.leykabot.model.screen.ui.ScreenManager;
@@ -62,6 +63,7 @@ public class RublesDepositSelectPaymentMethodScreen extends AbstractScreen {
             var links = transactions.stream()
                     .map(plategaService::getPaymentCreateResponse)
                     .filter(Objects::nonNull)
+                    .filter(r -> r.getStatus() == PaymentStatus.PENDING)
                     .map(PaymentCreateResponse::getRedirect)
                     .collect(java.util.stream.Collectors.joining("\n"));
 
