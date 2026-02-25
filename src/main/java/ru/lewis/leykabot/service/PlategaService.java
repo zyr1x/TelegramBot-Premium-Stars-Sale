@@ -4,6 +4,8 @@ import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.*;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -14,7 +16,6 @@ import ru.lewis.leykabot.model.dto.platega.*;
 import ru.lewis.leykabot.repository.PaymentRepository;
 
 import java.text.MessageFormat;
-import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -44,8 +45,17 @@ public class PlategaService {
 
     private <K, V> Cache<K, V> buildCache() {
         return Caffeine.newBuilder()
-                .expireAfterWrite(Duration.ofMinutes(30))
                 .build();
+    }
+
+    @Async
+    @Scheduled(fixedDelay = 300_000)
+    public void cleanupExpiredTransactions() {
+        var expiredEntities = paymentRepository.findAllByCreatedAtBefore(
+                LocalDateTime.now().minusMinutes(30)
+        );
+
+        expiredEntities.forEach(entity -> deleteTransaction(entity.getTransactionId()));
     }
 
     private HttpHeaders buildHeaders() {
