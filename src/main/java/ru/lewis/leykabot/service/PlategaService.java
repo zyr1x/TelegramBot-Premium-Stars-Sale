@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -88,18 +89,19 @@ public class PlategaService {
         var cached = userTransactionsCache.getIfPresent(telegramUserId);
         if (cached != null) return cached;
 
-        var fromDb = paymentRepository.findAllByTelegramUserId(telegramUserId)
-                .stream()
+        var entities = paymentRepository.findAllByTelegramUserId(telegramUserId); // один запрос
+
+        var fromDb = entities.stream()
                 .map(PaymentEntity::getTransactionId)
-                .collect(java.util.stream.Collectors.toCollection(ArrayList::new));
+                .collect(Collectors.toCollection(ArrayList::new));
+
+        entities.forEach(entity ->
+                amountResponseCache.put(entity.getTransactionId(), entity.getAmount()));
 
         if (!fromDb.isEmpty()) {
             userTransactionsCache.put(telegramUserId, fromDb);
         }
 
-        paymentRepository.findAllByTelegramUserId(telegramUserId).forEach(entity -> {
-            amountResponseCache.put(entity.getTransactionId(), entity.getAmount());
-        });
         return fromDb;
     }
 
