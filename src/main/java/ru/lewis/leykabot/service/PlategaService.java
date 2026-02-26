@@ -4,8 +4,6 @@ import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.*;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -22,7 +20,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -46,16 +43,6 @@ public class PlategaService {
     private <K, V> Cache<K, V> buildCache() {
         return Caffeine.newBuilder()
                 .build();
-    }
-
-    @Async
-    @Scheduled(fixedDelay = 300_000)
-    public void cleanupExpiredTransactions() {
-        var expiredEntities = paymentRepository.findAllByCreatedAtBefore(
-                LocalDateTime.now().minusMinutes(30)
-        );
-
-        expiredEntities.forEach(entity -> deleteTransaction(entity.getTransactionId()));
     }
 
     private HttpHeaders buildHeaders() {
@@ -90,29 +77,14 @@ public class PlategaService {
                 response.setRedirect(entity.getRedirect());
                 response.setPaymentMethod(entity.getPaymentMethod());
                 response.setStatus(entity.getStatus());
+                response.setCreatedAt(entity.getCreatedAt());
                 paymentResponseCache.put(entity.getTransactionId(), response);
             });
         });
     }
 
     private List<String> loadTransactions(Long telegramUserId) {
-        var cached = userTransactionsCache.getIfPresent(telegramUserId);
-        if (cached != null) return cached;
-
-        var entities = paymentRepository.findAllByTelegramUserId(telegramUserId); // один запрос
-
-        var fromDb = entities.stream()
-                .map(PaymentEntity::getTransactionId)
-                .collect(Collectors.toCollection(ArrayList::new));
-
-        entities.forEach(entity ->
-                amountResponseCache.put(entity.getTransactionId(), entity.getAmount()));
-
-        if (!fromDb.isEmpty()) {
-            userTransactionsCache.put(telegramUserId, fromDb);
-        }
-
-        return fromDb;
+        return userTransactionsCache.getIfPresent(telegramUserId);
     }
 
     // ─── методы ───────────────────────────────────────────────────────────────
@@ -159,7 +131,10 @@ public class PlategaService {
                 ResponseEntity<PaymentCreateResponse> response =
                         restTemplate.postForEntity(API_URL_PAYMENT, entity, PaymentCreateResponse.class);
 
+                var now = LocalDateTime.now();
                 var body2 = response.getBody();
+
+                body2.setCreatedAt(now);
                 String transactionId = body2.getTransactionId();
 
                 PaymentEntity paymentEntity = new PaymentEntity();
@@ -168,7 +143,7 @@ public class PlategaService {
                 paymentEntity.setRedirect(body2.getRedirect());
                 paymentEntity.setPaymentMethod(body2.getPaymentMethod());
                 paymentEntity.setStatus(body2.getStatus());
-                paymentEntity.setCreatedAt(LocalDateTime.now());
+                paymentEntity.setCreatedAt(now);
                 paymentEntity.setAmount(amountRubles);
                 paymentRepository.save(paymentEntity);
 
@@ -195,10 +170,10 @@ public class PlategaService {
 
         userTransactionsCache.asMap().forEach((userId, transactions) -> {
             transactions.remove(transactionId);
-            if (transactions.isEmpty()) {
-                userTransactionsCache.invalidate(userId);
-            }
         });
+
+        // отдельно чистим пустые
+        userTransactionsCache.asMap().entrySet().removeIf(e -> e.getValue().isEmpty());
     }
 
     public CompletableFuture<PaymentStatus> checkStatus(String transactionId) {
@@ -224,22 +199,30 @@ public class PlategaService {
     }
 
     public Long getUserIdByTransactionId(String transactionId) {
-        // сначала ищем в кэше
         var fromCache = userTransactionsCache.asMap().entrySet().stream()
                 .filter(entry -> entry.getValue().contains(transactionId))
                 .map(Map.Entry::getKey)
                 .findFirst();
-        return fromCache.orElseGet(() -> paymentRepository.findById(transactionId)
-                .map(PaymentEntity::getTelegramUserId)
-                .orElse(null));
+        return fromCache.orElse(0L);
     }
 
     public List<String> getTransactions(Long telegramUserId) {
-        return loadTransactions(telegramUserId);
+        var transactions = loadTransactions(telegramUserId);
+
+        if (transactions == null) return List.of();
+
+        transactions.forEach(this::checkExpired);
+        return transactions;
     }
 
-    public int getTransactionCount(Long telegramUserId) {
-        return loadTransactions(telegramUserId).size();
+    private void checkExpired(String transaction) {
+        var response = paymentResponseCache.getIfPresent(transaction);
+        if (response == null) return; // добавь это
+
+        var now = LocalDateTime.now();
+        if (response.getCreatedAt().plusMinutes(30).isBefore(now)) {
+            deleteTransaction(transaction);
+        }
     }
 
     public PaymentCreateResponse getPaymentCreateResponse(String transactionId) {

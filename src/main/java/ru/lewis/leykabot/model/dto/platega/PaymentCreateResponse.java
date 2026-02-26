@@ -2,6 +2,8 @@ package ru.lewis.leykabot.model.dto.platega;
 
 import lombok.Data;
 
+import java.time.LocalDateTime;
+
 @Data
 public class PaymentCreateResponse {
     private String paymentMethod;
@@ -12,6 +14,7 @@ public class PaymentCreateResponse {
     private String code;
     private String message;
     private java.util.List<ProviderError> data;
+    private LocalDateTime createdAt;
 
     @Data
     public static class ProviderError {
