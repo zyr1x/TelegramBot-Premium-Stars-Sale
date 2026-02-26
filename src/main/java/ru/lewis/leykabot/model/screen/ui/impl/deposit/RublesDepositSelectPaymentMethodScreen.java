@@ -21,9 +21,14 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 
 public class RublesDepositSelectPaymentMethodScreen extends AbstractScreen {
     private final int rubles;
+
+    private final UUID sbpqrId = UUID.randomUUID();
+    private final UUID cardId = UUID.randomUUID();
+    private final UUID cryptoId = UUID.randomUUID();
 
     private final TelegramService telegramService;
     private final ButtonsLocConfig buttonsLocConfig;
@@ -73,11 +78,9 @@ public class RublesDepositSelectPaymentMethodScreen extends AbstractScreen {
         }
         PaymentMethod paymentMethod = null;
 
-        switch (callback) {
-            case "sbpqr" -> paymentMethod = PaymentMethod.SBPQR;
-            case "card" -> paymentMethod = PaymentMethod.CARD_ACQUIRING;
-            case "crypto" -> paymentMethod = PaymentMethod.CRYPTO;
-        }
+        if (Objects.equals(callback, sbpqrId.toString())) paymentMethod = PaymentMethod.SBPQR;
+        if (Objects.equals(callback, cryptoId.toString())) paymentMethod = PaymentMethod.CRYPTO;
+        if (Objects.equals(callback, cardId.toString())) paymentMethod = PaymentMethod.CARD_ACQUIRING;
 
         plategaService.createPayment(paymentMethod, rubles, userId).thenAccept(response -> {
             if (response.getData() != null && !response.getData().isEmpty()) {
@@ -104,15 +107,17 @@ public class RublesDepositSelectPaymentMethodScreen extends AbstractScreen {
         InlineKeyboardRow row1 = new InlineKeyboardRow();
         InlineKeyboardButton sbpqrButton = InlineKeyboardButton.builder()
                 .text(keyboardLocConfig.getPaymentMethods().getSbpqr())
-                .callbackData("sbpqr")
+                .callbackData(sbpqrId.toString())
                 .build();
+
         InlineKeyboardButton cardButton = InlineKeyboardButton.builder()
                 .text(keyboardLocConfig.getPaymentMethods().getCard())
-                .callbackData("card")
+                .callbackData(cardId.toString())
                 .build();
+
         InlineKeyboardButton cryptoButton = InlineKeyboardButton.builder()
                 .text(keyboardLocConfig.getPaymentMethods().getCrypto())
-                .callbackData("crypto")
+                .callbackData(cryptoId.toString())
                 .build();
         row1.add(sbpqrButton);
         row1.add(cardButton);
