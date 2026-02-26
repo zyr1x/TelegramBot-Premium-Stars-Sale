@@ -21,11 +21,9 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class RublesDepositSelectPaymentMethodScreen extends AbstractScreen {
-    private final Set<Long> processingUsers = ConcurrentHashMap.newKeySet();
+    private boolean isActive;
     private final int rubles;
 
     private final TelegramService telegramService;
@@ -60,7 +58,8 @@ public class RublesDepositSelectPaymentMethodScreen extends AbstractScreen {
 
     @Override
     public void handleCallback(String callback, TelegramClient bot) {
-        if (!processingUsers.add(chatId)) return;
+        if (isActive) return;
+        isActive = true;
 
         // проверка что этот еблан не спамит транзакциями
         var transactions = plategaService.getTransactions(userId);
