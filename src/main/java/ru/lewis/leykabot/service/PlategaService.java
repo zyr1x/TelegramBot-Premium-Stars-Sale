@@ -149,7 +149,12 @@ public class PlategaService {
 
                 // обновляем кэш
                 var transactions = loadTransactions(telegramUserId);
+                if (transactions == null) {
+                    transactions = new ArrayList<>();
+                    userTransactionsCache.put(telegramUserId, transactions);
+                }
                 transactions.add(transactionId);
+                userTransactionsCache.put(telegramUserId, transactions);
                 userTransactionsCache.put(telegramUserId, transactions);
                 paymentResponseCache.put(transactionId, body2);
                 amountResponseCache.put(transactionId, amountRubles);
