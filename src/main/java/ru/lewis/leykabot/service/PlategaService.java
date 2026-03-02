@@ -213,11 +213,12 @@ public class PlategaService {
 
     public List<String> getTransactions(Long telegramUserId) {
         var transactions = loadTransactions(telegramUserId);
-
         if (transactions == null) return List.of();
 
-        transactions.forEach(this::checkExpired);
-        return transactions;
+        new ArrayList<>(transactions).forEach(this::checkExpired);
+
+        var updated = loadTransactions(telegramUserId);
+        return updated != null ? List.copyOf(updated) : List.of();
     }
 
     private void checkExpired(String transaction) {
