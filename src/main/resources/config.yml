@@ -1,0 +1,44 @@
+telegram:
+  channel-check-subscribe: '@your-bot'
+  channel-check-subscribe-url: 'https://t.me/your-bot'
+  log-channel-id: -1337
+  log-channel-topic-id: 2
+  price:
+    star: 0.015 # in usdt for 1
+    premium:
+  bot:
+    token: 'token'
+    name: 'bot'
+
+dev-mode:
+  enable: true
+  whitelist:
+    - 6533681747
+
+markup:
+  star: 0.015 # in usdt for 1
+  profit: 1.05
+  platega: 1.04
+
+ton:
+  network:
+    type: mainnet
+    timeout: 30000 # в течение скольки времени (в миллесекундах) будет проходить проверка соединения
+    checkout: 2000 # каждые сколько миллисекунд будет проверка соединения
+  wallet:
+    mnemonic: "a b c d e f g h"
+    api-key: "your-api-key"
+    address: 'your-address'
+
+platega:
+  api: 'your-api-key'
+  merchant-id: 'your-merchant-id'
+  makeup:
+    sbpqr: 1.04
+    card: 1.05
+    crypto: 1.01
+
+fragment:
+  api-url: https://fragment.com/api
+  hash: 'hash'
+  cookies: 'your-cookies'
